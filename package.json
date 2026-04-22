@@ -5,7 +5,8 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [
     "studyai",
@@ -16,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
@@ -24,6 +26,8 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.7"
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.0.0"
   }
 }
