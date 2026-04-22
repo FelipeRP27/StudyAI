@@ -31,7 +31,18 @@ function buildConteudoMateriaParamsDto(params) {
   return { materiaId };
 }
 
+function buildConteudoParamsDto(params) {
+  const id = Number(params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new AppError('valid conteudo id is required', 400);
+  }
+
+  return { id };
+}
+
 module.exports = {
   buildCreateConteudoInputDto,
-  buildConteudoMateriaParamsDto
+  buildConteudoMateriaParamsDto,
+  buildConteudoParamsDto
 };

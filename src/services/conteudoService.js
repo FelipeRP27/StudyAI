@@ -32,7 +32,18 @@ async function listByMateria(input) {
   return toConteudoListResponseDto(conteudos);
 }
 
+async function findById({ id, usuarioId }) {
+  const conteudo = await conteudoRepository.findByIdAndUserId(id, usuarioId);
+
+  if (!conteudo) {
+    throw new AppError('Conteudo not found', 404);
+  }
+
+  return toConteudoResponseDto(conteudo);
+}
+
 module.exports = {
   create,
-  listByMateria
+  listByMateria,
+  findById
 };
