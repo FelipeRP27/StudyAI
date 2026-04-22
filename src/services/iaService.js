@@ -83,5 +83,7 @@ async function generateJson({ prompt, systemInstruction, temperature = 0.4 }) {
 }
 
 module.exports = {
-  generateJson
+  generateJson,
+  extractJsonPayload,
+  mapProviderError
 };
