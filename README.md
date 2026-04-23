@@ -1,100 +1,153 @@
-📚 StudyAI
+# StudyAI
 
-Assistente Inteligente para Concursos Públicos
+Assistente Inteligente para Concursos Publicos
 
-🚀 Sobre o Projeto
+## Sobre o Projeto
 
-O StudyAI é uma plataforma desenvolvida para auxiliar estudantes de concursos públicos a transformar conteúdos teóricos em materiais de estudo ativos.
+O StudyAI e uma plataforma desenvolvida para auxiliar estudantes de concursos publicos a transformar conteudos teoricos em materiais de estudo ativos, com apoio de IA generativa (Google Gemini).
 
-O sistema permite organizar conteúdos, criar materiais de estudo e acompanhar o aprendizado de forma estruturada.
+## Objetivo
 
-🎯 Objetivo
+Facilitar o processo de estudo atraves de:
 
-Facilitar o processo de estudo através de:
+- Organizacao por materias
+- Estruturacao de conteudos
+- Geracao automatica de materiais:
+  - Resumos
+  - Pontos-chave
+  - Questoes com alternativas
+  - Flashcards
 
-Organização por matérias
-Estruturação de conteúdos
-Criação de materiais como:
-Resumos
-Questões
-Flashcards
-🧠 Funcionalidades
-🔐 Autenticação
-Cadastro de usuário
-Login com JWT
-Rotas protegidas
-📚 Matérias
-Criar, editar e excluir matérias
-Listagem por usuário
-📝 Conteúdos
-Inserção de conteúdo teórico
-Associação com matérias
-🧩 Estrutura de Estudo
-Resumos
-Pontos-chave
-Questões (com alternativas)
-Flashcards
-📊 Dashboard
-Visualização das matérias cadastradas
-🏗️ Arquitetura
+## Funcionalidades
 
-O projeto segue uma arquitetura em camadas:
+### Autenticacao
+- Cadastro de usuario
+- Login com JWT
+- Rotas protegidas
 
-Controller → Entrada de dados (requisições)
-Service → Regras de negócio
-Repository → Acesso ao banco de dados
-DTOs → Padronização de dados
-🛠️ Tecnologias Utilizadas
-Backend
-Node.js
-Express
-PostgreSQL
-JWT (Autenticação)
-bcrypt (Criptografia de senha)
-Frontend
-React
-Vite
-React Router
-🔗 Integração
+### Materias
+- Criar, editar e excluir materias
+- Listagem por usuario
 
-Fluxo do sistema:
+### Conteudos
+- Insercao de conteudo teorico
+- Associacao com materias
 
-Usuário → Frontend → Backend → Banco de Dados → Backend → Frontend
+### Estrutura de Estudo
+- Resumos
+- Pontos-chave
+- Questoes (com alternativas)
+- Flashcards
 
-⚙️ Como rodar o projeto
-🔹 Backend
+### Geracao com IA (Sprint 3)
+- Integracao com Google Gemini
+- Endpoint unificado `POST /api/v1/conteudos/:id/processar` que dispara a geracao em paralelo
+- Historico de processamento persistido na tabela `processamentos`
+- Frontend com botao "Gerar Estudo", estados de loading e tratamento de erro
+
+### Dashboard
+- Visualizacao das materias cadastradas
+
+## Arquitetura
+
+Projeto segue arquitetura em camadas:
+
+- Controller -> Entrada de dados (requisicoes)
+- Service -> Regras de negocio
+- Repository -> Acesso ao banco de dados
+- DTOs -> Padronizacao de dados
+
+## Tecnologias Utilizadas
+
+### Backend
+- Node.js / Express
+- PostgreSQL (via `pg`)
+- JWT (autenticacao)
+- bcrypt (criptografia de senha)
+- Google Generative AI SDK (Gemini)
+- Jest (testes)
+
+### Frontend
+- React / Vite
+- React Router
+- Context API (autenticacao)
+
+### Infra
+- Docker + docker-compose (backend, frontend, PostgreSQL)
+
+## Como rodar o projeto
+
+### Opcao 1 - Docker (recomendado)
+
+```bash
+cp .env.example .env
+# preencha GEMINI_API_KEY em .env
+docker-compose up --build
+```
+
+Backend em `http://localhost:3000`, frontend em `http://localhost:5173`.
+
+### Opcao 2 - Local
+
+Backend:
+```bash
+cp .env.example .env
 npm install
 npm run dev
-🔹 Frontend
+```
+
+Frontend:
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
-📦 Estrutura do Projeto
+## Testes
+
+```bash
+npm test
+```
+
+Cobre os servicos de IA (iaService, resumoService, pontoChaveService, questaoService, flashcardService, processamentoService) com mocks do provedor Gemini.
+
+## Variaveis de ambiente
+
+Ver `.env.example`. Para Sprint 3 e necessario `GEMINI_API_KEY` (gratuita em https://aistudio.google.com/apikey).
+
+## Estrutura do Projeto
+
+```
 StudyAI/
-│
-├── src/ (backend)
-│   ├── controllers
-│   ├── services
-│   ├── repositories
-│   ├── routes
-│   └── config
-│
-├── frontend/
-│   ├── src/
-│   ├── pages/
-│   ├── services/
-│   └── contexts/
-│
-└── README.md
-📌 Status do Projeto
+|
+|- src/ (backend)
+|  |- controllers
+|  |- services
+|  |- repositories
+|  |- routes
+|  |- dtos
+|  |- config
+|  |- __tests__
+|
+|- frontend/
+|  |- src/
+|     |- pages/
+|     |- services/
+|     |- contexts/
+|     |- router/
+|
+|- docker-compose.yml
+|- Dockerfile
+|- README.md
+```
 
-✔ Sprint 1 – Planejamento
-✔ Sprint 2 – Base funcional (MVP)
-🚧 Sprint 3 – Integração com IA (em andamento)
+## Status do Projeto
 
-👨‍💻 Autores
+- Sprint 1 - Planejamento (concluida)
+- Sprint 2 - Base funcional (MVP) (concluida)
+- Sprint 3 - Integracao com IA (concluida)
 
-Felipe Ramalho Perdigão
-Liam Coifman Rodrigues
+## Autores
 
+- Felipe Ramalho Perdigao
+- Liam Coifman Rodrigues

@@ -1,7 +1,8 @@
 const conteudoService = require('../services/conteudoService');
 const {
   buildCreateConteudoInputDto,
-  buildConteudoMateriaParamsDto
+  buildConteudoMateriaParamsDto,
+  buildConteudoParamsDto
 } = require('../dtos/conteudoInputDto');
 
 async function create(req, res, next) {
@@ -29,7 +30,22 @@ async function listByMateria(req, res, next) {
   }
 }
 
+async function findById(req, res, next) {
+  try {
+    const params = buildConteudoParamsDto(req.params);
+    const output = await conteudoService.findById({
+      id: params.id,
+      usuarioId: req.user.id
+    });
+
+    res.status(200).json(output);
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
-  listByMateria
+  listByMateria,
+  findById
 };

@@ -8,5 +8,6 @@ router.use(authMiddleware);
 
 router.post('/', conteudoController.create);
 router.get('/materia/:materiaId', conteudoController.listByMateria);
+router.get('/:id', conteudoController.findById);
 
 module.exports = router;

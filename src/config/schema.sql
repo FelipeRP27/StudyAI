@@ -91,3 +91,38 @@ CREATE TABLE IF NOT EXISTS flashcards (
         REFERENCES conteudos (id)
         ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS processamentos (
+    id SERIAL PRIMARY KEY,
+    conteudo_id INTEGER NOT NULL,
+    usuario_id INTEGER NOT NULL,
+    tipo VARCHAR(30) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pendente',
+    erro TEXT,
+    iniciado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    concluido_em TIMESTAMP,
+    CONSTRAINT fk_processamentos_conteudo
+        FOREIGN KEY (conteudo_id)
+        REFERENCES conteudos (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_processamentos_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios (id)
+        ON DELETE CASCADE,
+    CONSTRAINT chk_processamentos_tipo
+        CHECK (tipo IN ('resumo', 'pontos_chave', 'questoes', 'flashcards', 'completo')),
+    CONSTRAINT chk_processamentos_status
+        CHECK (status IN ('pendente', 'processando', 'concluido', 'erro'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_materias_usuario_id ON materias (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_conteudos_materia_id ON conteudos (materia_id);
+CREATE INDEX IF NOT EXISTS idx_conteudos_usuario_id ON conteudos (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_resumos_conteudo_id ON resumos (conteudo_id);
+CREATE INDEX IF NOT EXISTS idx_pontos_chave_conteudo_id ON pontos_chave (conteudo_id);
+CREATE INDEX IF NOT EXISTS idx_questoes_conteudo_id ON questoes (conteudo_id);
+CREATE INDEX IF NOT EXISTS idx_alternativas_questao_id ON alternativas (questao_id);
+CREATE INDEX IF NOT EXISTS idx_flashcards_conteudo_id ON flashcards (conteudo_id);
+CREATE INDEX IF NOT EXISTS idx_processamentos_conteudo_id ON processamentos (conteudo_id);
+CREATE INDEX IF NOT EXISTS idx_processamentos_usuario_id ON processamentos (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_processamentos_status ON processamentos (status);

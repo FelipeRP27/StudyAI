@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import DashboardPage from '../pages/DashboardPage';
+import MateriaPage from '../pages/MateriaPage';
+import ConteudoPage from '../pages/ConteudoPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
 
@@ -29,6 +31,22 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/materias/:materiaId"
+        element={
+          <ProtectedRoute>
+            <MateriaPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/conteudos/:conteudoId"
+        element={
+          <ProtectedRoute>
+            <ConteudoPage />
           </ProtectedRoute>
         }
       />

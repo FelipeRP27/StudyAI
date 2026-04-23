@@ -1,0 +1,164 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { materiaService } from '../services/materiaService';
+import { conteudoService } from '../services/conteudoService';
+
+function MateriaPage() {
+  const { materiaId } = useParams();
+  const navigate = useNavigate();
+  const { logout, usuario } = useAuth();
+
+  const [materia, setMateria] = useState(null);
+  const [conteudos, setConteudos] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [formData, setFormData] = useState({ titulo: '', texto: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const [materias, listaConteudos] = await Promise.all([
+        materiaService.listMaterias(),
+        conteudoService.listByMateria(materiaId)
+      ]);
+
+      const materiaAtual = materias.find((item) => String(item.id) === String(materiaId));
+      if (!materiaAtual) {
+        setErrorMessage('Materia nao encontrada.');
+        setMateria(null);
+      } else {
+        setMateria(materiaAtual);
+      }
+      setConteudos(listaConteudos);
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [materiaId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setCreateError('');
+    setIsCreating(true);
+
+    try {
+      await conteudoService.create({
+        titulo: formData.titulo,
+        texto: formData.texto,
+        materia_id: Number(materiaId)
+      });
+      setFormData({ titulo: '', texto: '' });
+      await loadData();
+    } catch (error) {
+      setCreateError(error.message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  return (
+    <main className="dashboard-page">
+      <section className="dashboard-hero">
+        <div>
+          <p className="eyebrow">
+            <Link to="/dashboard">← Materias</Link>
+          </p>
+          <h1>{materia?.nome || 'Carregando materia...'}</h1>
+          <p className="dashboard-copy">
+            {materia?.descricao || 'Organize conteudos teoricos e gere material de estudo ativo.'}
+          </p>
+          <span className="user-chip">{usuario?.nome}</span>
+        </div>
+
+        <button type="button" className="secondary-button" onClick={handleLogout}>
+          Sair
+        </button>
+      </section>
+
+      <section className="content-grid">
+        <article className="content-card">
+          <h2>Novo conteudo</h2>
+          <p className="muted">
+            Cole o texto teorico (resumo de aula, capitulo de apostila, lei seca) e o StudyAI vai
+            transformar em resumo, pontos-chave, questoes e flashcards.
+          </p>
+          <form className="form" onSubmit={handleCreate}>
+            <label className="field">
+              <span>Titulo</span>
+              <input
+                name="titulo"
+                type="text"
+                placeholder="Ex: Principios da Administracao Publica"
+                value={formData.titulo}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+            <label className="field">
+              <span>Texto</span>
+              <textarea
+                name="texto"
+                rows={8}
+                placeholder="Cole aqui o conteudo teorico"
+                value={formData.texto}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+            {createError ? <p className="feedback error">{createError}</p> : null}
+            <button type="submit" className="primary-button" disabled={isCreating}>
+              {isCreating ? 'Salvando...' : 'Criar conteudo'}
+            </button>
+          </form>
+        </article>
+
+        <article className="content-card">
+          <h2>Conteudos cadastrados</h2>
+          {isLoading ? <p>Carregando conteudos...</p> : null}
+          {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
+          {!isLoading && !errorMessage && conteudos.length === 0 ? (
+            <p className="muted">Nenhum conteudo cadastrado ainda nesta materia.</p>
+          ) : null}
+          {!isLoading && conteudos.length > 0 ? (
+            <ul className="matter-list">
+              {conteudos.map((conteudo) => (
+                <li key={conteudo.id} className="matter-item">
+                  <Link to={`/conteudos/${conteudo.id}`}>
+                    <strong>{conteudo.titulo}</strong>
+                    <span>
+                      {conteudo.texto.length > 140
+                        ? `${conteudo.texto.slice(0, 140)}...`
+                        : conteudo.texto}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </article>
+      </section>
+    </main>
+  );
+}
+
+export default MateriaPage;

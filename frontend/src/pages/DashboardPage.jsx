@@ -1,45 +1,60 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
 
 function DashboardPage() {
   const navigate = useNavigate();
   const { usuario, logout } = useAuth();
+
   const [materias, setMaterias] = useState([]);
-  const [isLoadingMaterias, setIsLoadingMaterias] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    let isMounted = true;
+  const [formData, setFormData] = useState({ nome: '', descricao: '' });
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
-    async function loadMaterias() {
-      setIsLoadingMaterias(true);
-      setErrorMessage('');
-
-      try {
-        const response = await materiaService.listMaterias();
-
-        if (isMounted) {
-          setMaterias(response);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setErrorMessage(error.message);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingMaterias(false);
-        }
-      }
+  const loadMaterias = useCallback(async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+    try {
+      const response = await materiaService.listMaterias();
+      setMaterias(response);
+    } catch (error) {
+      setErrorMessage(error.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    loadMaterias();
-
-    return () => {
-      isMounted = false;
-    };
   }, []);
+
+  useEffect(() => {
+    loadMaterias();
+  }, [loadMaterias]);
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setCreateError('');
+    setIsCreating(true);
+
+    try {
+      await materiaService.create({
+        nome: formData.nome,
+        descricao: formData.descricao
+      });
+      setFormData({ nome: '', descricao: '' });
+      await loadMaterias();
+    } catch (error) {
+      setCreateError(error.message);
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -50,11 +65,10 @@ function DashboardPage() {
     <main className="dashboard-page">
       <section className="dashboard-hero">
         <div>
-          <p className="eyebrow">Sprint 2</p>
-          <h1>Dashboard base do StudyAI</h1>
+          <p className="eyebrow">StudyAI</p>
+          <h1>Ola, {usuario?.nome?.split(' ')[0] || 'estudante'}</h1>
           <p className="dashboard-copy">
-            Esta tela esta conectada ao backend e pronta para evoluir com os modulos das proximas
-            sprints.
+            Organize suas materias e gere resumos, pontos-chave, questoes e flashcards com IA.
           </p>
         </div>
 
@@ -63,32 +77,53 @@ function DashboardPage() {
         </button>
       </section>
 
-      <section className="dashboard-grid">
-        <article className="dashboard-card">
-          <h2>Usuario autenticado</h2>
-          <p>{usuario?.nome || 'Usuario'}</p>
-          <span>{usuario?.email || 'email nao disponivel'}</span>
+      <section className="content-grid">
+        <article className="content-card">
+          <h2>Nova materia</h2>
+          <form className="form" onSubmit={handleCreate}>
+            <label className="field">
+              <span>Nome</span>
+              <input
+                name="nome"
+                type="text"
+                placeholder="Ex: Direito Administrativo"
+                value={formData.nome}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+            <label className="field">
+              <span>Descricao</span>
+              <input
+                name="descricao"
+                type="text"
+                placeholder="Opcional"
+                value={formData.descricao}
+                onChange={handleInputChange}
+              />
+            </label>
+            {createError ? <p className="feedback error">{createError}</p> : null}
+            <button type="submit" className="primary-button" disabled={isCreating}>
+              {isCreating ? 'Salvando...' : 'Criar materia'}
+            </button>
+          </form>
         </article>
 
-        <article className="dashboard-card">
-          <h2>Integracao com backend</h2>
-          <p>Cliente HTTP centralizado em services com JWT automatico.</p>
-          <span>Base URL configuravel por variavel de ambiente.</span>
-        </article>
-
-        <article className="dashboard-card">
-          <h2>Materias do usuario</h2>
-          {isLoadingMaterias ? <p>Carregando materias...</p> : null}
-          {!isLoadingMaterias && errorMessage ? <p>{errorMessage}</p> : null}
-          {!isLoadingMaterias && !errorMessage && materias.length === 0 ? (
-            <p>Nenhuma materia cadastrada ainda.</p>
+        <article className="content-card">
+          <h2>Suas materias</h2>
+          {isLoading ? <p>Carregando materias...</p> : null}
+          {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
+          {!isLoading && !errorMessage && materias.length === 0 ? (
+            <p className="muted">Nenhuma materia cadastrada ainda.</p>
           ) : null}
-          {!isLoadingMaterias && !errorMessage && materias.length > 0 ? (
+          {!isLoading && materias.length > 0 ? (
             <ul className="matter-list">
               {materias.map((materia) => (
                 <li key={materia.id} className="matter-item">
-                  <strong>{materia.nome}</strong>
-                  <span>{materia.descricao || 'Sem descricao cadastrada.'}</span>
+                  <Link to={`/materias/${materia.id}`}>
+                    <strong>{materia.nome}</strong>
+                    <span>{materia.descricao || 'Sem descricao cadastrada.'}</span>
+                  </Link>
                 </li>
               ))}
             </ul>
