@@ -8,6 +8,7 @@ const pontoChaveRoutes = require('./pontoChaveRoutes');
 const processamentoRoutes = require('./processamentoRoutes');
 const protectedRoutes = require('./protectedRoutes');
 const questaoRoutes = require('./questaoRoutes');
+const respostaRoutes = require('./respostaRoutes');
 const resumoRoutes = require('./resumoRoutes');
 
 const router = express.Router();
@@ -21,6 +22,7 @@ router.use('/pontos-chave', pontoChaveRoutes);
 router.use('/processamentos', processamentoRoutes);
 router.use('/protected', protectedRoutes);
 router.use('/questoes', questaoRoutes);
+router.use('/respostas', respostaRoutes);
 router.use('/resumos', resumoRoutes);
 
 module.exports = router;

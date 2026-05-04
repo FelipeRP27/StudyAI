@@ -115,6 +115,66 @@ CREATE TABLE IF NOT EXISTS processamentos (
         CHECK (status IN ('pendente', 'processando', 'concluido', 'erro'))
 );
 
+CREATE TABLE IF NOT EXISTS respostas_questoes (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    questao_id INTEGER NOT NULL,
+    alternativa_id INTEGER NOT NULL,
+    is_correta BOOLEAN NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_respostas_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_respostas_questao
+        FOREIGN KEY (questao_id)
+        REFERENCES questoes (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_respostas_alternativa
+        FOREIGN KEY (alternativa_id)
+        REFERENCES alternativas (id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS flashcards_revisados (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    flashcard_id INTEGER NOT NULL,
+    revisado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_flashcards_revisados_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_flashcards_revisados_flashcard
+        FOREIGN KEY (flashcard_id)
+        REFERENCES flashcards (id)
+        ON DELETE CASCADE,
+    CONSTRAINT uq_flashcards_revisados_user_card
+        UNIQUE (usuario_id, flashcard_id)
+);
+
+CREATE TABLE IF NOT EXISTS tarefas (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    materia_id INTEGER,
+    titulo VARCHAR(150) NOT NULL,
+    descricao TEXT,
+    data_limite DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pendente',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    concluida_em TIMESTAMP,
+    CONSTRAINT fk_tarefas_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_tarefas_materia
+        FOREIGN KEY (materia_id)
+        REFERENCES materias (id)
+        ON DELETE SET NULL,
+    CONSTRAINT chk_tarefas_status
+        CHECK (status IN ('pendente', 'concluida'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_materias_usuario_id ON materias (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_conteudos_materia_id ON conteudos (materia_id);
 CREATE INDEX IF NOT EXISTS idx_conteudos_usuario_id ON conteudos (usuario_id);
@@ -126,3 +186,11 @@ CREATE INDEX IF NOT EXISTS idx_flashcards_conteudo_id ON flashcards (conteudo_id
 CREATE INDEX IF NOT EXISTS idx_processamentos_conteudo_id ON processamentos (conteudo_id);
 CREATE INDEX IF NOT EXISTS idx_processamentos_usuario_id ON processamentos (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_processamentos_status ON processamentos (status);
+CREATE INDEX IF NOT EXISTS idx_respostas_usuario_id ON respostas_questoes (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_respostas_questao_id ON respostas_questoes (questao_id);
+CREATE INDEX IF NOT EXISTS idx_flashcards_revisados_usuario_id ON flashcards_revisados (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_flashcards_revisados_flashcard_id ON flashcards_revisados (flashcard_id);
+CREATE INDEX IF NOT EXISTS idx_tarefas_usuario_id ON tarefas (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_tarefas_materia_id ON tarefas (materia_id);
+CREATE INDEX IF NOT EXISTS idx_tarefas_data_limite ON tarefas (data_limite);
+CREATE INDEX IF NOT EXISTS idx_tarefas_status ON tarefas (status);
