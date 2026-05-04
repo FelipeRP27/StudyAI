@@ -11,6 +11,7 @@ const protectedRoutes = require('./protectedRoutes');
 const questaoRoutes = require('./questaoRoutes');
 const respostaRoutes = require('./respostaRoutes');
 const resumoRoutes = require('./resumoRoutes');
+const tarefaRoutes = require('./tarefaRoutes');
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use('/protected', protectedRoutes);
 router.use('/questoes', questaoRoutes);
 router.use('/respostas', respostaRoutes);
 router.use('/resumos', resumoRoutes);
+router.use('/tarefas', tarefaRoutes);
 
 module.exports = router;
