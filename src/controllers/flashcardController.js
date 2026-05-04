@@ -1,7 +1,8 @@
 const flashcardService = require('../services/flashcardService');
 const {
   buildCreateFlashcardInputDto,
-  buildFlashcardConteudoParamsDto
+  buildFlashcardConteudoParamsDto,
+  buildFlashcardParamsDto
 } = require('../dtos/flashcardInputDto');
 
 async function create(req, res, next) {
@@ -27,7 +28,35 @@ async function listByConteudo(req, res, next) {
   }
 }
 
+async function marcarRevisado(req, res, next) {
+  try {
+    const params = buildFlashcardParamsDto(req.params);
+    const output = await flashcardService.marcarRevisado({
+      flashcardId: params.id,
+      usuarioId: req.user.id
+    });
+    res.status(200).json(output);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function desmarcarRevisado(req, res, next) {
+  try {
+    const params = buildFlashcardParamsDto(req.params);
+    await flashcardService.desmarcarRevisado({
+      flashcardId: params.id,
+      usuarioId: req.user.id
+    });
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   create,
-  listByConteudo
+  listByConteudo,
+  marcarRevisado,
+  desmarcarRevisado
 };
