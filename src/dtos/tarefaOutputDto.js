@@ -3,9 +3,9 @@ const MS_POR_DIA = 1000 * 60 * 60 * 24;
 function calcularDiasRestantes(dataLimite, hoje = new Date()) {
   if (!dataLimite) return null;
   const limite = new Date(dataLimite);
-  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  const fim = new Date(limite.getFullYear(), limite.getMonth(), limite.getDate());
-  return Math.round((fim.getTime() - inicio.getTime()) / MS_POR_DIA);
+  const fimUtc = Date.UTC(limite.getUTCFullYear(), limite.getUTCMonth(), limite.getUTCDate());
+  const inicioUtc = Date.UTC(hoje.getUTCFullYear(), hoje.getUTCMonth(), hoje.getUTCDate());
+  return Math.round((fimUtc - inicioUtc) / MS_POR_DIA);
 }
 
 function calcularUrgencia({ status, diasRestantes }) {
