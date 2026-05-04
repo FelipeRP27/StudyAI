@@ -45,8 +45,22 @@ Facilitar o processo de estudo atraves de:
 - Historico de processamento persistido na tabela `processamentos`
 - Frontend com botao "Gerar Estudo", estados de loading e tratamento de erro
 
+### Estudo ativo (Sprint 4)
+- **Resolucao de questoes** com correcao automatica (`POST /api/v1/respostas`) e
+  feedback imediato exibindo a alternativa correta
+- **Flashcards revisados** persistidos por usuario
+  (`POST /api/v1/flashcards/:id/revisado`, `DELETE /api/v1/flashcards/:id/revisado`)
+- **Desempenho** com taxa de acerto, totais, recorte por materia e evolucao
+  diaria (`GET /api/v1/desempenho?dias=30`)
+- **Tarefas de estudo** com prazo, status e materia opcional
+  (`GET/POST/PUT/PATCH /api/v1/tarefas`); o backend devolve `dias_restantes`
+  e `urgencia` (vencida, urgente, proxima, normal, concluida)
+
 ### Dashboard
 - Visualizacao das materias cadastradas
+- Atalhos para Tarefas e Desempenho
+- Telas dedicadas: `/conteudos/:id/questoes`, `/conteudos/:id/flashcards`,
+  `/desempenho`, `/tarefas`
 
 ## Arquitetura
 
@@ -109,7 +123,7 @@ npm run dev
 npm test
 ```
 
-Cobre os servicos de IA (iaService, resumoService, pontoChaveService, questaoService, flashcardService, processamentoService) com mocks do provedor Gemini.
+Cobre os servicos da Sprint 3 (iaService, resumoService, pontoChaveService, questaoService, flashcardService, processamentoService) e da Sprint 4 (respostaService, tarefaService, tarefaOutputDto, desempenhoService) com mocks de Gemini e dos repositorios. Total: 52 testes.
 
 ## Variaveis de ambiente
 
@@ -146,6 +160,7 @@ StudyAI/
 - Sprint 1 - Planejamento (concluida)
 - Sprint 2 - Base funcional (MVP) (concluida)
 - Sprint 3 - Integracao com IA (concluida)
+- Sprint 4 - Estudo ativo: respostas, desempenho, tarefas, telas dedicadas (concluida)
 
 ## Autores
 

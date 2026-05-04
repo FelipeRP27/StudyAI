@@ -107,6 +107,7 @@ frontend/src/
 - Sprint 1 — Planejamento: concluída
 - Sprint 2 — MVP backend+frontend (auth, CRUD materias/conteudos): concluída
 - Sprint 3 — Integração IA (Gemini, geração de material, histórico, Docker, testes): concluída em `sprint-3` (PR #35)
+- Sprint 4 — Estudo ativo (respostas, desempenho, tarefas, telas dedicadas): concluída em `sprint-4`
 
 ## O que NÃO fazer
 
