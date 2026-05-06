@@ -78,6 +78,11 @@ async function generateJson({ prompt, systemInstruction, temperature = 0.4 }) {
     if (error instanceof AppError) {
       throw error;
     }
+    console.error('[iaService] erro do provedor:', {
+      status: error?.status || error?.response?.status,
+      message: error?.message,
+      model: env.geminiModel
+    });
     throw mapProviderError(error);
   }
 }
