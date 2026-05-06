@@ -2,6 +2,16 @@
 
 Contexto do projeto para sessões do Claude Code. Mantenha este arquivo **curto e atualizado** — ele é carregado em todo turno, então inflar aqui custa tokens em toda conversa.
 
+## Antes de começar qualquer tarefa
+
+**Sempre** faça uma revisão rápida do projeto antes de codar (sem extrapolar — o objetivo é entender o estado atual, não auditar tudo):
+
+1. `git status` + `git log --oneline -10` na branch atual — saber o que está em andamento e o que foi entregue.
+2. Ler/relembrar as áreas que a tarefa toca (controller, service, repository, dto correspondentes — ou pages/services do frontend).
+3. Conferir testes existentes do módulo afetado em `src/__tests__/` (são o contrato vivo).
+4. Se a tarefa mexer em IA, revisar `iaService` antes de qualquer service novo que dependa dele.
+5. Reportar em uma frase o que entendeu do estado atual antes de propor o plano — assim o Liam corrige o rumo cedo.
+
 ## O que é o projeto
 
 Plataforma web para estudantes de concursos públicos transformarem conteúdo teórico em material de estudo ativo (resumo, pontos-chave, questões com alternativas, flashcards) com apoio de IA generativa (Google Gemini). Projeto acadêmico, entregue em sprints.
@@ -97,6 +107,7 @@ frontend/src/
 - Sprint 1 — Planejamento: concluída
 - Sprint 2 — MVP backend+frontend (auth, CRUD materias/conteudos): concluída
 - Sprint 3 — Integração IA (Gemini, geração de material, histórico, Docker, testes): concluída em `sprint-3` (PR #35)
+- Sprint 4 — Estudo ativo (respostas, desempenho, tarefas, telas dedicadas): concluída em `sprint-4`
 
 ## O que NÃO fazer
 
@@ -116,3 +127,18 @@ frontend/src/
 4. Testes com Jest (mocks), `npm test` deve ficar verde
 5. Atualiza README se mudou comando/dependência
 6. Commit em pt-BR, push, PR para `dev`
+
+## Boas práticas de git (trabalho em equipe)
+
+Toda mudança vai pro git — nada de pilha de arquivos modificados acumulando. Regras:
+
+- **Commits pequenos e atômicos.** Um commit = uma mudança lógica coerente (um card, um fix, uma refatoração). Não misturar feature + refactor + ajuste de doc no mesmo commit.
+- **Mensagem em pt-BR** seguindo `tipo(escopo): descrição`. Tipos usados no repo: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. Verbo no infinitivo/3ª pessoa, sem ponto final, <72 chars no título. Exemplos no `git log`.
+- **Nunca commit em `dev` ou `main` direto.** Sempre branch (`sprint-N` ou `feat/...`), PR para `dev`.
+- **Antes de commitar:** `git status` para conferir o que entra, `git diff --staged` para revisar, `npm test` se mexeu em backend. Adicionar arquivo por arquivo (`git add path/...`), nunca `git add .`.
+- **Não commitar** segredos, `.env`, `node_modules`, builds, arquivos do IDE, dumps de banco. Se algo suspeito aparecer no `git status`, parar e perguntar.
+- **Não reescrever histórico já enviado** (`push --force`, `rebase` em commits compartilhados, `reset --hard` em branch remota). Se errar um commit, corrige com um novo.
+- **Pull antes de push** quando a branch é compartilhada: `git pull --rebase origin <branch>` para evitar merges supérfluos.
+- **PR sempre com descrição:** Resumo + Cards entregues + Como testar + Checklist. Título <70 chars.
+- **Confirmar antes** de ações destrutivas (delete branch, force push, reset hard, revert) — Claude pergunta primeiro.
+- **Confirmar antes** de `git push` e de abrir PR — só executa quando o Liam pedir explicitamente.

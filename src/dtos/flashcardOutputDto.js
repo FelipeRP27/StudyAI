@@ -4,7 +4,8 @@ function toFlashcardResponseDto(flashcard) {
     conteudo_id: flashcard.conteudo_id,
     frente: flashcard.frente,
     verso: flashcard.verso,
-    created_at: flashcard.created_at
+    created_at: flashcard.created_at,
+    revisado_em: flashcard.revisado_em || null
   };
 }
 

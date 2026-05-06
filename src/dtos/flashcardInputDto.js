@@ -31,7 +31,18 @@ function buildFlashcardConteudoParamsDto(params) {
   return { conteudoId };
 }
 
+function buildFlashcardParamsDto(params) {
+  const id = Number(params.id);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new AppError('valid id is required', 400);
+  }
+
+  return { id };
+}
+
 module.exports = {
   buildCreateFlashcardInputDto,
-  buildFlashcardConteudoParamsDto
+  buildFlashcardConteudoParamsDto,
+  buildFlashcardParamsDto
 };

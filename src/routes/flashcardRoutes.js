@@ -8,5 +8,7 @@ router.use(authMiddleware);
 
 router.post('/', flashcardController.create);
 router.get('/conteudo/:conteudoId', flashcardController.listByConteudo);
+router.post('/:id/revisado', flashcardController.marcarRevisado);
+router.delete('/:id/revisado', flashcardController.desmarcarRevisado);
 
 module.exports = router;

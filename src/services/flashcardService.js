@@ -1,5 +1,6 @@
 const flashcardRepository = require('../repositories/flashcardRepository');
 const conteudoOwnershipService = require('./conteudoOwnershipService');
+const flashcardOwnershipService = require('./flashcardOwnershipService');
 const iaService = require('./iaService');
 const { flashcardsPrompt } = require('./iaPrompts');
 const AppError = require('../config/appError');
@@ -16,8 +17,22 @@ async function create(input) {
 
 async function listByConteudo(input) {
   await conteudoOwnershipService.ensureConteudoOwnership(input.conteudoId, input.usuarioId);
-  const flashcards = await flashcardRepository.findAllByConteudoId(input.conteudoId);
+  const flashcards = await flashcardRepository.findAllByConteudoId(input.conteudoId, input.usuarioId);
   return toFlashcardListResponseDto(flashcards);
+}
+
+async function marcarRevisado({ flashcardId, usuarioId }) {
+  await flashcardOwnershipService.ensureFlashcardOwnership(flashcardId, usuarioId);
+  const revisao = await flashcardRepository.marcarRevisado({ flashcardId, usuarioId });
+  return {
+    flashcard_id: revisao.flashcard_id,
+    revisado_em: revisao.revisado_em
+  };
+}
+
+async function desmarcarRevisado({ flashcardId, usuarioId }) {
+  await flashcardOwnershipService.ensureFlashcardOwnership(flashcardId, usuarioId);
+  await flashcardRepository.desmarcarRevisado({ flashcardId, usuarioId });
 }
 
 async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 8 }) {
@@ -60,5 +75,7 @@ async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 8 }) {
 module.exports = {
   create,
   listByConteudo,
-  generateFromConteudo
+  generateFromConteudo,
+  marcarRevisado,
+  desmarcarRevisado
 };

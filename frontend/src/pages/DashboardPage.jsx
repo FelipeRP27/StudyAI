@@ -77,6 +77,19 @@ function DashboardPage() {
         </button>
       </section>
 
+      <section className="shortcut-grid">
+        <Link to="/tarefas" className="shortcut-card">
+          <span className="eyebrow">Organizacao</span>
+          <strong>Tarefas de estudo</strong>
+          <span className="muted">Crie prazos, veja o que esta urgente.</span>
+        </Link>
+        <Link to="/desempenho" className="shortcut-card">
+          <span className="eyebrow">Acompanhamento</span>
+          <strong>Seu desempenho</strong>
+          <span className="muted">Taxa de acerto, evolucao e por materia.</span>
+        </Link>
+      </section>
+
       <section className="content-grid">
         <article className="content-card">
           <h2>Nova materia</h2>

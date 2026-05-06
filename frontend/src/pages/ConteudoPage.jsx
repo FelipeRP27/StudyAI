@@ -48,95 +48,71 @@ function PontosChaveView({ pontos }) {
   );
 }
 
-function QuestoesView({ questoes }) {
-  const [respostas, setRespostas] = useState({});
-  const [revelou, setRevelou] = useState({});
-
+function QuestoesView({ questoes, conteudoId }) {
   if (!questoes || questoes.length === 0) {
     return <p className="muted">Nenhuma questao gerada ainda.</p>;
   }
 
-  const selecionar = (questaoId, alternativaId) => {
-    setRespostas((atual) => ({ ...atual, [questaoId]: alternativaId }));
-  };
-
-  const revelar = (questaoId) => {
-    setRevelou((atual) => ({ ...atual, [questaoId]: true }));
-  };
-
   return (
     <div className="stack">
-      {questoes.map((questao, idx) => (
-        <article key={questao.id} className="card-inner">
-          <strong>
-            Questao {idx + 1}. {questao.enunciado}
-          </strong>
-          <ul className="alt-list">
-            {questao.alternativas.map((alt, altIdx) => {
-              const letra = String.fromCharCode(65 + altIdx);
-              const selecionada = respostas[questao.id] === alt.id;
-              const mostrandoResposta = revelou[questao.id];
-              let classe = 'alt-item';
-              if (mostrandoResposta) {
-                if (alt.is_correta) classe += ' correct';
-                else if (selecionada) classe += ' wrong';
-              } else if (selecionada) {
-                classe += ' selected';
-              }
-              return (
-                <li key={alt.id} className={classe}>
-                  <button
-                    type="button"
-                    onClick={() => selecionar(questao.id, alt.id)}
-                    disabled={mostrandoResposta}
-                  >
-                    <span className="letra">{letra})</span> {alt.texto}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-          {!revelou[questao.id] ? (
-            <button
-              type="button"
-              className="secondary-button small"
-              onClick={() => revelar(questao.id)}
-              disabled={!respostas[questao.id]}
-            >
-              Verificar resposta
-            </button>
-          ) : null}
-        </article>
-      ))}
+      <div className="cta-card">
+        <div>
+          <strong>{questoes.length} questoes prontas</strong>
+          <p className="muted">
+            Resolva no modo guiado: uma por vez, com feedback imediato e correcao automatica.
+          </p>
+        </div>
+        <Link to={`/conteudos/${conteudoId}/questoes`} className="primary-button small">
+          Resolver questoes
+        </Link>
+      </div>
+      <ul className="bullet-list">
+        {questoes.slice(0, 5).map((questao, idx) => (
+          <li key={questao.id}>
+            <strong>Questao {idx + 1}.</strong> {questao.enunciado}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-function FlashcardsView({ flashcards }) {
-  const [revelados, setRevelados] = useState({});
-
+function FlashcardsView({ flashcards, conteudoId }) {
   if (!flashcards || flashcards.length === 0) {
     return <p className="muted">Nenhum flashcard gerado ainda.</p>;
   }
 
-  const alternar = (id) => {
-    setRevelados((atual) => ({ ...atual, [id]: !atual[id] }));
-  };
+  const revisados = flashcards.filter((c) => c.revisado_em).length;
 
   return (
-    <div className="flashcard-grid">
-      {flashcards.map((card) => (
-        <button
-          key={card.id}
-          type="button"
-          className={`flashcard ${revelados[card.id] ? 'revealed' : ''}`}
-          onClick={() => alternar(card.id)}
-        >
-          <span className="flashcard-label">{revelados[card.id] ? 'Resposta' : 'Pergunta'}</span>
-          <p>{revelados[card.id] ? card.verso : card.frente}</p>
-          <span className="flashcard-hint">Clique para virar</span>
-        </button>
-      ))}
+    <div className="stack">
+      <div className="cta-card">
+        <div>
+          <strong>{flashcards.length} flashcards</strong>
+          <p className="muted">
+            {revisados > 0
+              ? `${revisados} revisado(s). Continue praticando no modo guiado.`
+              : 'Estude no modo guiado: virar carta, marcar revisado e avancar.'}
+          </p>
+        </div>
+        <Link to={`/conteudos/${conteudoId}/flashcards`} className="primary-button small">
+          Estudar flashcards
+        </Link>
+      </div>
+      <div className="flashcard-grid">
+        {flashcards.slice(0, 4).map((card) => (
+          <article
+            key={card.id}
+            className={`flashcard ${card.revisado_em ? 'reviewed' : ''}`}
+          >
+            <span className="flashcard-label">Pergunta</span>
+            <p>{card.frente}</p>
+            <span className="flashcard-hint">
+              {card.revisado_em ? 'Revisado' : 'Aguardando revisao'}
+            </span>
+          </article>
+        ))}
+      </div>
     </div>
   );
 }
@@ -318,8 +294,12 @@ function ConteudoPage() {
             <div className="tab-content">
               {abaAtiva === 'resumo' && <ResumoView resumos={resumos} />}
               {abaAtiva === 'pontos_chave' && <PontosChaveView pontos={pontosChave} />}
-              {abaAtiva === 'questoes' && <QuestoesView questoes={questoes} />}
-              {abaAtiva === 'flashcards' && <FlashcardsView flashcards={flashcards} />}
+              {abaAtiva === 'questoes' && (
+                <QuestoesView questoes={questoes} conteudoId={conteudoId} />
+              )}
+              {abaAtiva === 'flashcards' && (
+                <FlashcardsView flashcards={flashcards} conteudoId={conteudoId} />
+              )}
             </div>
           </section>
 
