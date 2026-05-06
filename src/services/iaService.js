@@ -2,7 +2,19 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { env } = require('../config/env');
 const AppError = require('../config/appError');
 
+const MAX_TENTATIVAS = 3;
+const ATRASO_INICIAL_MS = 1000;
+
 let cachedClient = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryable(error) {
+  const status = error?.status || error?.response?.status;
+  return status === 429 || (status && status >= 500);
+}
 
 function getClient() {
   if (!env.geminiApiKey) {
@@ -70,21 +82,31 @@ async function generateJson({ prompt, systemInstruction, temperature = 0.4 }) {
     }
   });
 
-  try {
-    const result = await model.generateContent(prompt);
-    const text = result?.response?.text?.();
-    return extractJsonPayload(text);
-  } catch (error) {
-    if (error instanceof AppError) {
-      throw error;
+  let ultimoErro;
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa += 1) {
+    try {
+      const result = await model.generateContent(prompt);
+      const text = result?.response?.text?.();
+      return extractJsonPayload(text);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      ultimoErro = error;
+      console.error('[iaService] erro do provedor:', {
+        tentativa,
+        status: error?.status || error?.response?.status,
+        message: error?.message,
+        model: env.geminiModel
+      });
+      if (!isRetryable(error) || tentativa === MAX_TENTATIVAS) {
+        break;
+      }
+      await sleep(ATRASO_INICIAL_MS * 2 ** (tentativa - 1));
     }
-    console.error('[iaService] erro do provedor:', {
-      status: error?.status || error?.response?.status,
-      message: error?.message,
-      model: env.geminiModel
-    });
-    throw mapProviderError(error);
   }
+
+  throw mapProviderError(ultimoErro);
 }
 
 module.exports = {

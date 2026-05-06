@@ -1,4 +1,16 @@
-const { extractJsonPayload, mapProviderError } = require('../services/iaService');
+jest.mock('../config/env', () => ({
+  env: { geminiApiKey: 'fake-key', geminiModel: 'gemini-2.5-flash' }
+}));
+
+const mockGenerateContent = jest.fn();
+
+jest.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
+    getGenerativeModel: () => ({ generateContent: mockGenerateContent })
+  }))
+}));
+
+const { extractJsonPayload, mapProviderError, generateJson } = require('../services/iaService');
 const AppError = require('../config/appError');
 
 describe('iaService.extractJsonPayload', () => {
@@ -62,5 +74,55 @@ describe('iaService.mapProviderError', () => {
     const err = mapProviderError({ message: 'timeout' });
     expect(err.statusCode).toBe(502);
     expect(err.message).toMatch(/timeout/);
+  });
+});
+
+describe('iaService.generateJson (retry)', () => {
+  beforeEach(() => {
+    mockGenerateContent.mockReset();
+    jest.useFakeTimers();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    console.error.mockRestore();
+  });
+
+  test('retenta em erro 503 e retorna sucesso na segunda tentativa', async () => {
+    mockGenerateContent
+      .mockRejectedValueOnce({ status: 503, message: 'indisponivel' })
+      .mockResolvedValueOnce({ response: { text: () => '{"resumo":"ok"}' } });
+
+    const promise = generateJson({ prompt: 'p', systemInstruction: 's' });
+    await jest.runAllTimersAsync();
+    const result = await promise;
+
+    expect(result).toEqual({ resumo: 'ok' });
+    expect(mockGenerateContent).toHaveBeenCalledTimes(2);
+  });
+
+  test('retenta em erro 429 ate o limite e mapeia o erro final', async () => {
+    mockGenerateContent.mockRejectedValue({ status: 429, message: 'rate' });
+
+    const promise = generateJson({ prompt: 'p', systemInstruction: 's' }).catch((e) => e);
+    await jest.runAllTimersAsync();
+    const resultado = await promise;
+
+    expect(resultado).toBeInstanceOf(AppError);
+    expect(resultado.message).toMatch(/Limite/);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+  });
+
+  test('nao retenta em erro nao-retryable (401)', async () => {
+    mockGenerateContent.mockRejectedValue({ status: 401, message: 'unauthorized' });
+
+    const promise = generateJson({ prompt: 'p', systemInstruction: 's' }).catch((e) => e);
+    await jest.runAllTimersAsync();
+    const resultado = await promise;
+
+    expect(resultado).toBeInstanceOf(AppError);
+    expect(resultado.message).toMatch(/invalida/);
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 });
