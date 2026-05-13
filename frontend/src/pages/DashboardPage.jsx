@@ -1,13 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
+import { tarefaService } from '../services/tarefaService';
+import { desempenhoService } from '../services/desempenhoService';
 
 function DashboardPage() {
   const navigate = useNavigate();
   const { usuario, logout } = useAuth();
 
   const [materias, setMaterias] = useState([]);
+  const [tarefas, setTarefas] = useState([]);
+  const [desempenho, setDesempenho] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -15,12 +19,18 @@ function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
 
-  const loadMaterias = useCallback(async () => {
+  const loadAll = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const response = await materiaService.listMaterias();
-      setMaterias(response);
+      const [materiasData, tarefasData, desempenhoData] = await Promise.all([
+        materiaService.listMaterias(),
+        tarefaService.listAll().catch(() => []),
+        desempenhoService.get({ dias: 30 }).catch(() => null)
+      ]);
+      setMaterias(materiasData);
+      setTarefas(tarefasData);
+      setDesempenho(desempenhoData);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -29,8 +39,8 @@ function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    loadMaterias();
-  }, [loadMaterias]);
+    loadAll();
+  }, [loadAll]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -48,7 +58,7 @@ function DashboardPage() {
         descricao: formData.descricao
       });
       setFormData({ nome: '', descricao: '' });
-      await loadMaterias();
+      await loadAll();
     } catch (error) {
       setCreateError(error.message);
     } finally {
@@ -61,6 +71,17 @@ function DashboardPage() {
     navigate('/login');
   };
 
+  const tarefasUrgentes = useMemo(
+    () =>
+      tarefas.filter(
+        (t) => t.status !== 'concluida' && (t.urgencia === 'vencida' || t.urgencia === 'urgente')
+      ),
+    [tarefas]
+  );
+
+  const taxaAcerto = desempenho?.resumo?.taxa_acerto ?? null;
+  const totalRespostas = desempenho?.resumo?.total_respostas ?? 0;
+
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
@@ -70,6 +91,17 @@ function DashboardPage() {
           <p className="dashboard-copy">
             Organize suas materias e gere resumos, pontos-chave, questoes e flashcards com IA.
           </p>
+          <div className="stat-chips">
+            <span className="stat-chip">
+              <strong>{materias.length}</strong> materias
+            </span>
+            <span className={`stat-chip ${tarefasUrgentes.length > 0 ? 'warn' : ''}`}>
+              <strong>{tarefasUrgentes.length}</strong> tarefas urgentes
+            </span>
+            <span className="stat-chip">
+              <strong>{totalRespostas > 0 ? `${taxaAcerto}%` : '—'}</strong> de acerto
+            </span>
+          </div>
         </div>
 
         <button type="button" className="secondary-button" onClick={handleLogout}>
@@ -81,12 +113,20 @@ function DashboardPage() {
         <Link to="/tarefas" className="shortcut-card">
           <span className="eyebrow">Organizacao</span>
           <strong>Tarefas de estudo</strong>
-          <span className="muted">Crie prazos, veja o que esta urgente.</span>
+          <span className="muted">
+            {tarefasUrgentes.length > 0
+              ? `${tarefasUrgentes.length} com prazo critico - veja agora`
+              : 'Crie prazos, veja o que esta urgente.'}
+          </span>
         </Link>
         <Link to="/desempenho" className="shortcut-card">
           <span className="eyebrow">Acompanhamento</span>
           <strong>Seu desempenho</strong>
-          <span className="muted">Taxa de acerto, evolucao e por materia.</span>
+          <span className="muted">
+            {totalRespostas > 0
+              ? `${totalRespostas} respostas, ${taxaAcerto}% de acerto`
+              : 'Comece a responder questoes para ver dados aqui.'}
+          </span>
         </Link>
       </section>
 
