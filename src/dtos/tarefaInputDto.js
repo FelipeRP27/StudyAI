@@ -1,6 +1,8 @@
 const AppError = require('../config/appError');
 
 const STATUS_VALIDOS = ['pendente', 'concluida'];
+const TITULO_MAX_LENGTH = 150;
+const DESCRICAO_MAX_LENGTH = 500;
 
 function parseDataLimite(raw) {
   if (!raw) {
@@ -24,34 +26,40 @@ function parseMateriaId(raw) {
   return id;
 }
 
-function buildCreateTarefaInputDto(body, usuarioId) {
-  const { titulo, descricao, data_limite: dataLimite, materia_id: materiaId } = body;
-
-  if (!titulo || !String(titulo).trim()) {
-    throw new AppError('titulo is required', 400);
+function normalizarTituloDescricao({ titulo, descricao }) {
+  const tituloTrimmed = titulo ? String(titulo).trim() : '';
+  if (tituloTrimmed.length === 0 || tituloTrimmed.length > TITULO_MAX_LENGTH) {
+    throw new AppError(`titulo must be between 1 and ${TITULO_MAX_LENGTH} characters`, 400);
   }
+  const descricaoTrimmed = descricao ? String(descricao).trim() : null;
+  if (descricaoTrimmed && descricaoTrimmed.length > DESCRICAO_MAX_LENGTH) {
+    throw new AppError(`descricao must have at most ${DESCRICAO_MAX_LENGTH} characters`, 400);
+  }
+  return { titulo: tituloTrimmed, descricao: descricaoTrimmed };
+}
+
+function buildCreateTarefaInputDto(body, usuarioId) {
+  const { data_limite: dataLimite, materia_id: materiaId } = body;
+  const { titulo, descricao } = normalizarTituloDescricao(body);
 
   return {
     usuarioId: Number(usuarioId),
-    titulo: String(titulo).trim(),
-    descricao: descricao ? String(descricao).trim() : null,
+    titulo,
+    descricao,
     dataLimite: parseDataLimite(dataLimite),
     materiaId: parseMateriaId(materiaId)
   };
 }
 
 function buildUpdateTarefaInputDto(body, usuarioId, id) {
-  const { titulo, descricao, data_limite: dataLimite, materia_id: materiaId } = body;
-
-  if (!titulo || !String(titulo).trim()) {
-    throw new AppError('titulo is required', 400);
-  }
+  const { data_limite: dataLimite, materia_id: materiaId } = body;
+  const { titulo, descricao } = normalizarTituloDescricao(body);
 
   return {
     id: Number(id),
     usuarioId: Number(usuarioId),
-    titulo: String(titulo).trim(),
-    descricao: descricao ? String(descricao).trim() : null,
+    titulo,
+    descricao,
     dataLimite: parseDataLimite(dataLimite),
     materiaId: parseMateriaId(materiaId)
   };

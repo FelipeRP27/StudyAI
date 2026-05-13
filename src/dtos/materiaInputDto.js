@@ -1,31 +1,40 @@
 const AppError = require('../config/appError');
 
-function buildCreateMateriaInputDto(body, usuarioId) {
-  const { nome, descricao } = body;
+const NOME_MAX_LENGTH = 120;
+const DESCRICAO_MAX_LENGTH = 500;
 
-  if (!nome) {
-    throw new AppError('nome is required', 400);
+function normalizarNomeDescricao({ nome, descricao }) {
+  const nomeTrimmed = nome ? String(nome).trim() : '';
+  if (nomeTrimmed.length === 0 || nomeTrimmed.length > NOME_MAX_LENGTH) {
+    throw new AppError(`nome must be between 1 and ${NOME_MAX_LENGTH} characters`, 400);
   }
+
+  const descricaoTrimmed = descricao ? String(descricao).trim() : null;
+  if (descricaoTrimmed && descricaoTrimmed.length > DESCRICAO_MAX_LENGTH) {
+    throw new AppError(`descricao must have at most ${DESCRICAO_MAX_LENGTH} characters`, 400);
+  }
+
+  return { nome: nomeTrimmed, descricao: descricaoTrimmed };
+}
+
+function buildCreateMateriaInputDto(body, usuarioId) {
+  const { nome, descricao } = normalizarNomeDescricao(body);
 
   return {
     usuarioId: Number(usuarioId),
-    nome: String(nome).trim(),
-    descricao: descricao ? String(descricao).trim() : null
+    nome,
+    descricao
   };
 }
 
 function buildUpdateMateriaInputDto(body, usuarioId, id) {
-  const { nome, descricao } = body;
-
-  if (!nome) {
-    throw new AppError('nome is required', 400);
-  }
+  const { nome, descricao } = normalizarNomeDescricao(body);
 
   return {
     id: Number(id),
     usuarioId: Number(usuarioId),
-    nome: String(nome).trim(),
-    descricao: descricao ? String(descricao).trim() : null
+    nome,
+    descricao
   };
 }
 
