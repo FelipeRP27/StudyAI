@@ -40,6 +40,14 @@ export function AuthProvider({ children }) {
     setIsReady(true);
   }, []);
 
+  useEffect(() => {
+    api.setUnauthorizedHandler(() => {
+      setAuthState({ token: null, usuario: null });
+      api.setAuthToken(null);
+      localStorage.removeItem(STORAGE_KEY);
+    });
+  }, []);
+
   const saveAuth = (nextState) => {
     setAuthState(nextState);
     api.setAuthToken(nextState.token);
