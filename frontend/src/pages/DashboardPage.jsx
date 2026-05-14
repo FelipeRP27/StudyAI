@@ -107,27 +107,6 @@ function DashboardPage() {
         </div>
       </section>
 
-      <section className="shortcut-grid">
-        <Link to="/tarefas" className="shortcut-card">
-          <span className="eyebrow">Organização</span>
-          <strong>Tarefas de estudo</strong>
-          <span className="muted">
-            {tarefasUrgentes.length > 0
-              ? `${tarefasUrgentes.length} com prazo critico - veja agora`
-              : 'Crie prazos, veja o que esta urgente.'}
-          </span>
-        </Link>
-        <Link to="/desempenho" className="shortcut-card">
-          <span className="eyebrow">Acompanhamento</span>
-          <strong>Seu desempenho</strong>
-          <span className="muted">
-            {totalRespostas > 0
-              ? `${totalRespostas} respostas, ${taxaAcerto}% de acerto`
-              : 'Comece a responder questões para ver dados aqui.'}
-          </span>
-        </Link>
-      </section>
-
       <section className="content-grid">
         <article className="content-card">
           <h2>Nova matéria</h2>
@@ -144,7 +123,7 @@ function DashboardPage() {
               />
             </label>
             <label className="field">
-              <span>Descricao</span>
+              <span>Descrição</span>
               <input
                 name="descricao"
                 type="text"
@@ -165,21 +144,57 @@ function DashboardPage() {
           {isLoading ? <p>Carregando matérias...</p> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && materias.length === 0 ? (
-            <p className="muted">Nenhuma matéria cadastrada ainda.</p>
+            <div className="empty-state">
+              <div className="empty-state-icon" aria-hidden="true">📚</div>
+              <strong>Comece criando sua primeira matéria</strong>
+              <p className="muted">
+                Use o formulário ao lado para organizar seus conteúdos por área de estudo.
+              </p>
+            </div>
           ) : null}
           {!isLoading && materias.length > 0 ? (
             <ul className="matter-list">
               {materias.map((materia) => (
                 <li key={materia.id} className="matter-item">
                   <Link to={`/materias/${materia.id}`}>
-                    <strong>{materia.nome}</strong>
-                    <span>{materia.descricao || 'Sem descrição cadastrada.'}</span>
+                    <div className="matter-item-text">
+                      <strong>{materia.nome}</strong>
+                      <span>{materia.descricao || 'Sem descrição cadastrada.'}</span>
+                    </div>
+                    <span className="matter-item-arrow" aria-hidden="true">›</span>
                   </Link>
                 </li>
               ))}
             </ul>
           ) : null}
         </article>
+      </section>
+
+      <section className="shortcut-grid">
+        <Link to="/tarefas" className="shortcut-card">
+          <div>
+            <span className="eyebrow">Organização</span>
+            <strong>Tarefas de estudo</strong>
+            <span className="muted">
+              {tarefasUrgentes.length > 0
+                ? `${tarefasUrgentes.length} com prazo crítico — veja agora`
+                : 'Crie prazos, veja o que está urgente.'}
+            </span>
+          </div>
+          <span className="shortcut-arrow" aria-hidden="true">→</span>
+        </Link>
+        <Link to="/desempenho" className="shortcut-card">
+          <div>
+            <span className="eyebrow">Acompanhamento</span>
+            <strong>Seu desempenho</strong>
+            <span className="muted">
+              {totalRespostas > 0
+                ? `${totalRespostas} respostas, ${taxaAcerto}% de acerto`
+                : 'Comece a responder questões para ver dados aqui.'}
+            </span>
+          </div>
+          <span className="shortcut-arrow" aria-hidden="true">→</span>
+        </Link>
       </section>
     </main>
   );

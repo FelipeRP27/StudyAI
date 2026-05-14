@@ -113,6 +113,10 @@ function MateriaPage() {
                 onChange={handleInputChange}
                 required
               />
+              <small className="field-help">
+                Recomendado: pelo menos 500 caracteres para a IA gerar bom material
+                (resumo, pontos-chave, questões e flashcards). Mínimo aceito: 20 caracteres.
+              </small>
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
             <button type="submit" className="primary-button" disabled={isCreating}>
