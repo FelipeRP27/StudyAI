@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
 import { tarefaService } from '../services/tarefaService';
@@ -8,8 +8,7 @@ import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function DashboardPage() {
   useDocumentTitle('Dashboard');
-  const navigate = useNavigate();
-  const { usuario, logout } = useAuth();
+  const { usuario } = useAuth();
 
   const [materias, setMaterias] = useState([]);
   const [tarefas, setTarefas] = useState([]);
@@ -68,11 +67,6 @@ function DashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const tarefasUrgentes = useMemo(
     () =>
       tarefas.filter(
@@ -111,10 +105,6 @@ function DashboardPage() {
             </span>
           </div>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       <section className="shortcut-grid">

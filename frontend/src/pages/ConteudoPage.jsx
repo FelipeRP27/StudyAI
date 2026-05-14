@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useParams } from 'react-router-dom';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
 import { pontoChaveService } from '../services/pontoChaveService';
@@ -120,8 +119,6 @@ function FlashcardsView({ flashcards, conteudoId }) {
 
 function ConteudoPage() {
   const { conteudoId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
   useDocumentTitle(conteudo?.titulo || 'Conteúdo');
@@ -195,11 +192,6 @@ function ConteudoPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const contagens = useMemo(
     () => ({
       resumo: resumos.length,
@@ -224,12 +216,7 @@ function ConteudoPage() {
             </p>
           )}
           <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? (

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useParams } from 'react-router-dom';
 import { conteudoService } from '../services/conteudoService';
 import { flashcardService } from '../services/flashcardService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -8,8 +7,6 @@ import { useDocumentTitle } from '../shared/useDocumentTitle';
 function FlashcardsPage() {
   useDocumentTitle('Flashcards');
   const { conteudoId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
   const [flashcards, setFlashcards] = useState([]);
@@ -81,11 +78,6 @@ function FlashcardsPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
@@ -95,12 +87,7 @@ function FlashcardsPage() {
           </p>
           <h1>Flashcards</h1>
           <p className="dashboard-copy">{conteudo?.titulo || 'Carregando...'}</p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? (

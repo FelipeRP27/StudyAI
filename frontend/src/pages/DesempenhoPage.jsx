@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 
@@ -29,8 +28,6 @@ function BarraTaxa({ taxa }) {
 
 function DesempenhoPage() {
   useDocumentTitle('Desempenho');
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [dados, setDados] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,11 +54,6 @@ function DesempenhoPage() {
     };
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const resumo = dados?.resumo;
   const porMateria = dados?.por_materia || [];
   const evolucao = dados?.evolucao || [];
@@ -80,12 +72,7 @@ function DesempenhoPage() {
           <p className="dashboard-copy">
             Estatísticas dos últimos 30 dias com base nas questões que você respondeu.
           </p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? <p>Carregando desempenho...</p> : null}

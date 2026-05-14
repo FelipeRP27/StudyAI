@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link } from 'react-router-dom';
 import { tarefaService } from '../services/tarefaService';
 import { materiaService } from '../services/materiaService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -29,8 +28,6 @@ const FORM_INICIAL = { titulo: '', descricao: '', data_limite: '', materia_id: '
 
 function TarefasPage() {
   useDocumentTitle('Tarefas de estudo');
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [tarefas, setTarefas] = useState([]);
   const [materias, setMaterias] = useState([]);
@@ -135,11 +132,6 @@ function TarefasPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const { urgentes, demais } = useMemo(() => {
     const urg = [];
     const out = [];
@@ -164,12 +156,7 @@ function TarefasPage() {
           <p className="dashboard-copy">
             Organize seus prazos e acompanhe o que está urgente.
           </p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       <section className="content-grid">

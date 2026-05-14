@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useParams } from 'react-router-dom';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -9,8 +8,6 @@ import { respostaService } from '../services/respostaService';
 function QuestoesPage() {
   useDocumentTitle('Resolver questões');
   const { conteudoId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
   const [questoes, setQuestoes] = useState([]);
@@ -84,11 +81,6 @@ function QuestoesPage() {
     if (indice > 0) setIndice(indice - 1);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
@@ -100,12 +92,7 @@ function QuestoesPage() {
           <p className="dashboard-copy">
             {conteudo?.titulo || 'Carregando...'}
           </p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? (

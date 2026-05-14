@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useParams } from 'react-router-dom';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function MateriaPage() {
   const { materiaId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [materia, setMateria] = useState(null);
   useDocumentTitle(materia?.nome || 'Matéria');
@@ -73,11 +70,6 @@ function MateriaPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
@@ -89,12 +81,7 @@ function MateriaPage() {
           <p className="dashboard-copy">
             {materia?.descricao || 'Organize conteúdos teóricos e gere material de estudo ativo.'}
           </p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       <section className="content-grid">
