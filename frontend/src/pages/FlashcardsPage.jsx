@@ -109,28 +109,54 @@ function FlashcardsPage() {
             </span>
           </header>
 
+          <div className="progress-track flashcard-progress">
+            <div
+              className="progress-fill good"
+              style={{ width: `${(totalRevisados / flashcards.length) * 100}%` }}
+            />
+          </div>
+
           {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
-          <button
-            type="button"
-            className={`flashcard flashcard-large ${revelado ? 'revealed' : ''} ${
-              cardAtual.revisado_em ? 'reviewed' : ''
-            }`}
+          <div
+            className={`flashcard-3d-wrapper ${cardAtual.revisado_em ? 'reviewed' : ''}`}
             onClick={virar}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                virar();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Virar flashcard"
           >
-            <span className="flashcard-label">{revelado ? 'Resposta' : 'Pergunta'}</span>
-            <p>{revelado ? cardAtual.verso : cardAtual.frente}</p>
-            <span className="flashcard-hint">Clique para virar</span>
-          </button>
+            <div className={`flashcard-3d ${revelado ? 'flipped' : ''}`}>
+              <div className="flashcard-face flashcard-face-front">
+                <span className="flashcard-label">Pergunta</span>
+                <p>{cardAtual.frente}</p>
+                <span className="flashcard-hint flashcard-hint-center">
+                  <span aria-hidden="true">↻</span> Clique para virar
+                </span>
+              </div>
+              <div className="flashcard-face flashcard-face-back">
+                <span className="flashcard-label">Resposta</span>
+                <p>{cardAtual.verso}</p>
+                <span className="flashcard-hint flashcard-hint-center">
+                  <span aria-hidden="true">↻</span> Clique para voltar
+                </span>
+              </div>
+            </div>
+          </div>
 
           <div className="quiz-actions">
             <button
               type="button"
-              className="secondary-button small"
+              className="secondary-button small quiz-nav"
               onClick={() => irPara(-1)}
               disabled={indice === 0}
             >
-              Anterior
+              ← Anterior
             </button>
 
             <button
@@ -148,11 +174,11 @@ function FlashcardsPage() {
 
             <button
               type="button"
-              className="secondary-button small"
+              className="secondary-button small quiz-nav"
               onClick={() => irPara(1)}
               disabled={indice === flashcards.length - 1}
             >
-              Próximo
+              Próximo →
             </button>
           </div>
 

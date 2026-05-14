@@ -81,6 +81,12 @@ function QuestoesPage() {
     if (indice > 0) setIndice(indice - 1);
   };
 
+  const refazer = () => {
+    setEscolhas({});
+    setFeedbacks({});
+    setIndice(0);
+  };
+
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
@@ -104,6 +110,26 @@ function QuestoesPage() {
           <p className="muted">
             Nenhuma questão gerada para este conteúdo. Volte ao conteúdo e gere o material com IA.
           </p>
+        </section>
+      ) : concluiuTodas ? (
+        <section className="content-card quiz-summary">
+          <div className="quiz-summary-icon" aria-hidden="true">🎯</div>
+          <h2>Você concluiu todas as questões!</h2>
+          <p className="quiz-summary-score">
+            <strong>{totalAcertos}</strong> de <strong>{questoes.length}</strong> corretas (
+            {Math.round((totalAcertos / questoes.length) * 100)}% de acerto)
+          </p>
+          <div className="quiz-summary-actions">
+            <button type="button" className="secondary-button" onClick={refazer}>
+              Refazer
+            </button>
+            <Link to={`/conteudos/${conteudoId}`} className="secondary-button">
+              Voltar ao conteúdo
+            </Link>
+            <Link to="/desempenho" className="primary-button">
+              Ver desempenho
+            </Link>
+          </div>
         </section>
       ) : (
         <section className="content-card">
@@ -160,11 +186,11 @@ function QuestoesPage() {
             <div className="quiz-actions">
               <button
                 type="button"
-                className="secondary-button small"
+                className="secondary-button small quiz-nav"
                 onClick={anterior}
                 disabled={indice === 0}
               >
-                Anterior
+                ← Anterior
               </button>
 
               {!feedbackAtual ? (
@@ -181,26 +207,12 @@ function QuestoesPage() {
                   type="button"
                   className="primary-button"
                   onClick={proxima}
-                  disabled={indice === questoes.length - 1}
                 >
-                  Próxima
+                  {indice === questoes.length - 1 ? 'Ver resultado' : 'Próxima →'}
                 </button>
               )}
             </div>
           </article>
-
-          {concluiuTodas ? (
-            <div className="quiz-finished">
-              <strong>Você respondeu todas as questões!</strong>
-              <span>
-                Acertou {totalAcertos} de {questoes.length} (
-                {Math.round((totalAcertos / questoes.length) * 100)}%).
-              </span>
-              <Link to="/desempenho" className="primary-button small">
-                Ver desempenho
-              </Link>
-            </div>
-          ) : null}
         </section>
       )}
     </main>

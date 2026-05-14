@@ -15,7 +15,7 @@ function toRespostaResponseDto({ resposta, alternativaCorreta }) {
       acertou: resposta.is_correta,
       mensagem: resposta.is_correta
         ? 'Resposta correta!'
-        : 'Resposta incorreta. Confira a alternativa correta abaixo.',
+        : 'Resposta incorreta. A alternativa correta está destacada em verde acima.',
       alternativa_correta: alternativaCorreta
         ? {
             id: alternativaCorreta.id,

@@ -101,7 +101,10 @@ function DesempenhoPage() {
           ) : (
             <>
               <section className="content-card">
-                <h2>Desempenho por matéria</h2>
+                <header className="section-with-legend">
+                  <h2>Desempenho por matéria</h2>
+                  <span className="legend muted">acertos / total respondidas</span>
+                </header>
                 {porMateria.length === 0 ? (
                   <p className="muted">Sem dados por matéria ainda.</p>
                 ) : (
@@ -110,7 +113,9 @@ function DesempenhoPage() {
                       <li key={item.materia_id}>
                         <header>
                           <strong>{item.materia_nome}</strong>
-                          <span>
+                          <span
+                            title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
+                          >
                             {item.total_acertos}/{item.total_respostas} ({item.taxa_acerto}%)
                           </span>
                         </header>
@@ -122,7 +127,10 @@ function DesempenhoPage() {
               </section>
 
               <section className="content-card">
-                <h2>Evolução diária</h2>
+                <header className="section-with-legend">
+                  <h2>Evolução diária</h2>
+                  <span className="legend muted">acertos / total respondidas</span>
+                </header>
                 {evolucao.length === 0 ? (
                   <p className="muted">Sem registros nos últimos 30 dias.</p>
                 ) : (
@@ -133,7 +141,10 @@ function DesempenhoPage() {
                           {new Date(dia.dia).toLocaleDateString('pt-BR')}
                         </span>
                         <BarraTaxa taxa={dia.taxa_acerto} />
-                        <span className="evolucao-num">
+                        <span
+                          className="evolucao-num"
+                          title={`${dia.total_acertos} acertos em ${dia.total_respostas} respondidas`}
+                        >
                           {dia.total_acertos}/{dia.total_respostas}
                         </span>
                       </li>
