@@ -7,11 +7,12 @@ import { pontoChaveService } from '../services/pontoChaveService';
 import { questaoService } from '../services/questaoService';
 import { flashcardService } from '../services/flashcardService';
 import { processamentoService } from '../services/processamentoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 const ABAS = [
   { id: 'resumo', titulo: 'Resumo' },
   { id: 'pontos_chave', titulo: 'Pontos-chave' },
-  { id: 'questoes', titulo: 'Questoes' },
+  { id: 'questoes', titulo: 'Questões' },
   { id: 'flashcards', titulo: 'Flashcards' }
 ];
 
@@ -50,20 +51,20 @@ function PontosChaveView({ pontos }) {
 
 function QuestoesView({ questoes, conteudoId }) {
   if (!questoes || questoes.length === 0) {
-    return <p className="muted">Nenhuma questao gerada ainda.</p>;
+    return <p className="muted">Nenhuma questão gerada ainda.</p>;
   }
 
   return (
     <div className="stack">
       <div className="cta-card">
         <div>
-          <strong>{questoes.length} questoes prontas</strong>
+          <strong>{questoes.length} questões prontas</strong>
           <p className="muted">
             Resolva no modo guiado: uma por vez, com feedback imediato e correcao automatica.
           </p>
         </div>
         <Link to={`/conteudos/${conteudoId}/questoes`} className="primary-button small">
-          Resolver questoes
+          Resolver questões
         </Link>
       </div>
       <ul className="bullet-list">
@@ -108,7 +109,7 @@ function FlashcardsView({ flashcards, conteudoId }) {
             <span className="flashcard-label">Pergunta</span>
             <p>{card.frente}</p>
             <span className="flashcard-hint">
-              {card.revisado_em ? 'Revisado' : 'Aguardando revisao'}
+              {card.revisado_em ? 'Revisado' : 'Aguardando revisão'}
             </span>
           </article>
         ))}
@@ -123,6 +124,7 @@ function ConteudoPage() {
   const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
+  useDocumentTitle(conteudo?.titulo || 'Conteúdo');
   const [resumos, setResumos] = useState([]);
   const [pontosChave, setPontosChave] = useState([]);
   const [questoes, setQuestoes] = useState([]);
@@ -214,14 +216,14 @@ function ConteudoPage() {
         <div>
           {conteudo ? (
             <p className="eyebrow">
-              <Link to={`/materias/${conteudo.materia_id}`}>← Voltar para materia</Link>
+              <Link to={`/materias/${conteudo.materia_id}`}>← Voltar para matéria</Link>
             </p>
           ) : (
             <p className="eyebrow">
               <Link to="/dashboard">← Dashboard</Link>
             </p>
           )}
-          <h1>{conteudo?.titulo || 'Carregando conteudo...'}</h1>
+          <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
           <span className="user-chip">{usuario?.nome}</span>
         </div>
 
@@ -231,7 +233,7 @@ function ConteudoPage() {
       </section>
 
       {isLoading ? (
-        <p>Carregando conteudo...</p>
+        <p>Carregando conteúdo...</p>
       ) : errorMessage ? (
         <p className="feedback error">{errorMessage}</p>
       ) : (
@@ -246,7 +248,7 @@ function ConteudoPage() {
               <div>
                 <h2>Gerar material de estudo com IA</h2>
                 <p className="muted">
-                  Dispara resumo, pontos-chave, questoes e flashcards em uma unica acao.
+                  Dispara resumo, pontos-chave, questões e flashcards em uma única ação.
                 </p>
               </div>
               <button
@@ -305,7 +307,7 @@ function ConteudoPage() {
 
           {processamentos.length > 0 ? (
             <section className="content-card">
-              <h2>Historico de processamento</h2>
+              <h2>Histórico de processamento</h2>
               <ul className="history-list">
                 {processamentos.slice(0, 10).map((proc) => (
                   <li key={proc.id} className={`history-item ${proc.status}`}>

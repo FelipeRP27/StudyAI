@@ -3,30 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { tarefaService } from '../services/tarefaService';
 import { materiaService } from '../services/materiaService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 const URGENCIA_LABEL = {
   vencida: 'Vencida',
   urgente: 'Urgente',
   proxima: 'Em breve',
   normal: 'No prazo',
-  concluida: 'Concluida'
+  concluida: 'Concluída'
 };
 
 function diasRestantesLabel(tarefa) {
-  if (tarefa.status === 'concluida') return 'Concluida';
+  if (tarefa.status === 'concluida') return 'Concluída';
   if (tarefa.dias_restantes === null) return '';
   if (tarefa.dias_restantes < 0) {
     const abs = Math.abs(tarefa.dias_restantes);
     return `${abs} ${abs === 1 ? 'dia em atraso' : 'dias em atraso'}`;
   }
   if (tarefa.dias_restantes === 0) return 'Vence hoje';
-  if (tarefa.dias_restantes === 1) return 'Vence amanha';
+  if (tarefa.dias_restantes === 1) return 'Vence amanhã';
   return `${tarefa.dias_restantes} dias restantes`;
 }
 
 const FORM_INICIAL = { titulo: '', descricao: '', data_limite: '', materia_id: '' };
 
 function TarefasPage() {
+  useDocumentTitle('Tarefas de estudo');
   const navigate = useNavigate();
   const { logout, usuario } = useAuth();
 
@@ -160,7 +162,7 @@ function TarefasPage() {
           </p>
           <h1>Tarefas de estudo</h1>
           <p className="dashboard-copy">
-            Organize seus prazos e acompanhe o que esta urgente.
+            Organize seus prazos e acompanhe o que está urgente.
           </p>
           <span className="user-chip">{usuario?.nome}</span>
         </div>
@@ -175,7 +177,7 @@ function TarefasPage() {
           <h2>{editandoId ? 'Editar tarefa' : 'Nova tarefa'}</h2>
           <form className="form" onSubmit={handleSubmit}>
             <label className="field">
-              <span>Titulo</span>
+              <span>Título</span>
               <input
                 name="titulo"
                 type="text"
@@ -186,7 +188,7 @@ function TarefasPage() {
               />
             </label>
             <label className="field">
-              <span>Descricao</span>
+              <span>Descrição</span>
               <input
                 name="descricao"
                 type="text"
@@ -206,13 +208,13 @@ function TarefasPage() {
               />
             </label>
             <label className="field">
-              <span>Materia</span>
+              <span>Matéria</span>
               <select
                 name="materia_id"
                 value={formData.materia_id}
                 onChange={handleInputChange}
               >
-                <option value="">Sem materia</option>
+                <option value="">Sem matéria</option>
                 {materias.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.nome}
@@ -223,7 +225,7 @@ function TarefasPage() {
             {formError ? <p className="feedback error">{formError}</p> : null}
             <div className="form-actions">
               <button type="submit" className="primary-button" disabled={isSaving}>
-                {isSaving ? 'Salvando...' : editandoId ? 'Salvar alteracoes' : 'Criar tarefa'}
+                {isSaving ? 'Salvando...' : editandoId ? 'Salvar alterações' : 'Criar tarefa'}
               </button>
               {editandoId ? (
                 <button
@@ -250,7 +252,7 @@ function TarefasPage() {
 
           {urgentes.length > 0 ? (
             <div className="task-section urgent">
-              <h3>Atencao - prazos criticos</h3>
+              <h3>Atenção — prazos críticos</h3>
               <ul className="task-list">
                 {urgentes.map((tarefa) => (
                   <TaskItem
@@ -304,7 +306,7 @@ function TaskItem({ tarefa, onEdit, onConcluir, onExcluir }) {
               : '—'}
           </span>
           <span>{diasRestantesLabel(tarefa)}</span>
-          {tarefa.materia_nome ? <span>Materia: {tarefa.materia_nome}</span> : null}
+          {tarefa.materia_nome ? <span>Matéria: {tarefa.materia_nome}</span> : null}
         </div>
       </div>
       <div className="task-actions">

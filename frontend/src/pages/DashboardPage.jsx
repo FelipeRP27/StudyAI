@@ -4,8 +4,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
 import { tarefaService } from '../services/tarefaService';
 import { desempenhoService } from '../services/desempenhoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function DashboardPage() {
+  useDocumentTitle('Dashboard');
   const navigate = useNavigate();
   const { usuario, logout } = useAuth();
 
@@ -87,19 +89,25 @@ function DashboardPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">StudyAI</p>
-          <h1>Ola, {usuario?.nome?.split(' ')[0] || 'estudante'}</h1>
+          <h1>Olá, {usuario?.nome?.split(' ')[0] || 'estudante'}</h1>
           <p className="dashboard-copy">
-            Organize suas materias e gere resumos, pontos-chave, questoes e flashcards com IA.
+            Organize suas matérias e gere resumos, pontos-chave, questões e flashcards com IA.
           </p>
           <div className="stat-chips">
             <span className="stat-chip">
-              <strong>{materias.length}</strong> materias
+              <strong>{materias.length}</strong> matérias
             </span>
             <span className={`stat-chip ${tarefasUrgentes.length > 0 ? 'warn' : ''}`}>
               <strong>{tarefasUrgentes.length}</strong> tarefas urgentes
             </span>
             <span className="stat-chip">
-              <strong>{totalRespostas > 0 ? `${taxaAcerto}%` : '—'}</strong> de acerto
+              {totalRespostas > 0 ? (
+                <>
+                  <strong>{taxaAcerto}%</strong> de acerto
+                </>
+              ) : (
+                <span>Sem dados de acerto ainda</span>
+              )}
             </span>
           </div>
         </div>
@@ -111,7 +119,7 @@ function DashboardPage() {
 
       <section className="shortcut-grid">
         <Link to="/tarefas" className="shortcut-card">
-          <span className="eyebrow">Organizacao</span>
+          <span className="eyebrow">Organização</span>
           <strong>Tarefas de estudo</strong>
           <span className="muted">
             {tarefasUrgentes.length > 0
@@ -125,14 +133,14 @@ function DashboardPage() {
           <span className="muted">
             {totalRespostas > 0
               ? `${totalRespostas} respostas, ${taxaAcerto}% de acerto`
-              : 'Comece a responder questoes para ver dados aqui.'}
+              : 'Comece a responder questões para ver dados aqui.'}
           </span>
         </Link>
       </section>
 
       <section className="content-grid">
         <article className="content-card">
-          <h2>Nova materia</h2>
+          <h2>Nova matéria</h2>
           <form className="form" onSubmit={handleCreate}>
             <label className="field">
               <span>Nome</span>
@@ -157,17 +165,17 @@ function DashboardPage() {
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
             <button type="submit" className="primary-button" disabled={isCreating}>
-              {isCreating ? 'Salvando...' : 'Criar materia'}
+              {isCreating ? 'Salvando...' : 'Criar matéria'}
             </button>
           </form>
         </article>
 
         <article className="content-card">
-          <h2>Suas materias</h2>
-          {isLoading ? <p>Carregando materias...</p> : null}
+          <h2>Suas matérias</h2>
+          {isLoading ? <p>Carregando matérias...</p> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && materias.length === 0 ? (
-            <p className="muted">Nenhuma materia cadastrada ainda.</p>
+            <p className="muted">Nenhuma matéria cadastrada ainda.</p>
           ) : null}
           {!isLoading && materias.length > 0 ? (
             <ul className="matter-list">
@@ -175,7 +183,7 @@ function DashboardPage() {
                 <li key={materia.id} className="matter-item">
                   <Link to={`/materias/${materia.id}`}>
                     <strong>{materia.nome}</strong>
-                    <span>{materia.descricao || 'Sem descricao cadastrada.'}</span>
+                    <span>{materia.descricao || 'Sem descrição cadastrada.'}</span>
                   </Link>
                 </li>
               ))}

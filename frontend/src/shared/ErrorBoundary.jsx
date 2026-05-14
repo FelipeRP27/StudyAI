@@ -27,7 +27,7 @@ class ErrorBoundary extends React.Component {
         <section className="content-card">
           <h2>Algo deu errado</h2>
           <p className="muted">
-            A pagina encontrou um erro inesperado. Voce pode voltar ao dashboard e tentar
+            A página encontrou um erro inesperado. Você pode voltar ao dashboard e tentar
             novamente.
           </p>
           {this.state.error?.message ? (

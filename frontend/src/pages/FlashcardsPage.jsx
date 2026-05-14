@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { conteudoService } from '../services/conteudoService';
 import { flashcardService } from '../services/flashcardService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function FlashcardsPage() {
+  useDocumentTitle('Flashcards');
   const { conteudoId } = useParams();
   const navigate = useNavigate();
   const { logout, usuario } = useAuth();
@@ -89,7 +91,7 @@ function FlashcardsPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteudo</Link>
+            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteúdo</Link>
           </p>
           <h1>Flashcards</h1>
           <p className="dashboard-copy">{conteudo?.titulo || 'Carregando...'}</p>
@@ -106,7 +108,7 @@ function FlashcardsPage() {
       ) : flashcards.length === 0 ? (
         <section className="content-card">
           <p className="muted">
-            Nenhum flashcard gerado para este conteudo. Volte ao conteudo e gere o material com IA.
+            Nenhum flashcard gerado para este conteúdo. Volte ao conteúdo e gere o material com IA.
           </p>
         </section>
       ) : (
@@ -163,7 +165,7 @@ function FlashcardsPage() {
               onClick={() => irPara(1)}
               disabled={indice === flashcards.length - 1}
             >
-              Proximo
+              Próximo
             </button>
           </div>
 

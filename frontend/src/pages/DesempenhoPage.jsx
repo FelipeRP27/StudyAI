@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { desempenhoService } from '../services/desempenhoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function MetricCard({ label, value, accent }) {
   return (
@@ -27,6 +28,7 @@ function BarraTaxa({ taxa }) {
 }
 
 function DesempenhoPage() {
+  useDocumentTitle('Desempenho');
   const navigate = useNavigate();
   const { logout, usuario } = useAuth();
 
@@ -76,7 +78,7 @@ function DesempenhoPage() {
           </p>
           <h1>Seu desempenho</h1>
           <p className="dashboard-copy">
-            Estatisticas dos ultimos 30 dias com base nas questoes que voce respondeu.
+            Estatísticas dos últimos 30 dias com base nas questões que você respondeu.
           </p>
           <span className="user-chip">{usuario?.nome}</span>
         </div>
@@ -100,21 +102,21 @@ function DesempenhoPage() {
 
           {semDados ? (
             <section className="content-card">
-              <h2>Comece resolvendo questoes</h2>
+              <h2>Comece resolvendo questões</h2>
               <p className="muted">
-                Voce ainda nao respondeu nenhuma questao. Acesse uma materia, gere o material e
+                Você ainda não respondeu nenhuma questão. Acesse uma matéria, gere o material e
                 comece a resolver para ver seu desempenho aqui.
               </p>
               <Link to="/dashboard" className="primary-button small">
-                Ir para materias
+                Ir para matérias
               </Link>
             </section>
           ) : (
             <>
               <section className="content-card">
-                <h2>Desempenho por materia</h2>
+                <h2>Desempenho por matéria</h2>
                 {porMateria.length === 0 ? (
-                  <p className="muted">Sem dados por materia ainda.</p>
+                  <p className="muted">Sem dados por matéria ainda.</p>
                 ) : (
                   <ul className="materia-stats">
                     {porMateria.map((item) => (
@@ -133,9 +135,9 @@ function DesempenhoPage() {
               </section>
 
               <section className="content-card">
-                <h2>Evolucao diaria</h2>
+                <h2>Evolução diária</h2>
                 {evolucao.length === 0 ? (
-                  <p className="muted">Sem registros nos ultimos 30 dias.</p>
+                  <p className="muted">Sem registros nos últimos 30 dias.</p>
                 ) : (
                   <ul className="evolucao-list">
                     {evolucao.map((dia) => (

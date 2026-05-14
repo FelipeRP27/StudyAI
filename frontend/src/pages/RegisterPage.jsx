@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthShell from '../shared/AuthShell';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function RegisterPage() {
+  useDocumentTitle('Cadastro');
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ function RegisterPage() {
 
     try {
       await register(formData);
-      setSuccessMessage('Cadastro realizado com sucesso. Faca login para continuar.');
+      setSuccessMessage('Cadastro realizado com sucesso. Faça login para continuar.');
       setTimeout(() => {
         navigate('/login');
       }, 800);
@@ -45,7 +47,7 @@ function RegisterPage() {
   return (
     <AuthShell
       title="Criar conta"
-      subtitle="Prepare sua area de estudos para materias, conteudos e acompanhamento."
+      subtitle="Prepare sua área de estudos para matérias, conteúdos e acompanhamento."
     >
       <form className="form" onSubmit={handleSubmit}>
         <label className="field">
@@ -93,7 +95,7 @@ function RegisterPage() {
       </form>
 
       <p className="auth-link">
-        Ja possui conta? <Link to="/login">Entrar</Link>
+        Já possui conta? <Link to="/login">Entrar</Link>
       </p>
     </AuthShell>
   );

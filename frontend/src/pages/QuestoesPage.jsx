@@ -3,9 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { respostaService } from '../services/respostaService';
 
 function QuestoesPage() {
+  useDocumentTitle('Resolver questões');
   const { conteudoId } = useParams();
   const navigate = useNavigate();
   const { logout, usuario } = useAuth();
@@ -92,9 +94,9 @@ function QuestoesPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteudo</Link>
+            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteúdo</Link>
           </p>
-          <h1>Resolver questoes</h1>
+          <h1>Resolver questões</h1>
           <p className="dashboard-copy">
             {conteudo?.titulo || 'Carregando...'}
           </p>
@@ -107,20 +109,20 @@ function QuestoesPage() {
       </section>
 
       {isLoading ? (
-        <p>Carregando questoes...</p>
+        <p>Carregando questões...</p>
       ) : errorMessage && questoes.length === 0 ? (
         <p className="feedback error">{errorMessage}</p>
       ) : questoes.length === 0 ? (
         <section className="content-card">
           <p className="muted">
-            Nenhuma questao gerada para este conteudo. Volte ao conteudo e gere o material com IA.
+            Nenhuma questão gerada para este conteúdo. Volte ao conteúdo e gere o material com IA.
           </p>
         </section>
       ) : (
         <section className="content-card">
           <header className="quiz-header">
             <span>
-              Questao {indice + 1} de {questoes.length}
+              Questão {indice + 1} de {questoes.length}
             </span>
             <span className="quiz-score">
               {totalAcertos} acertos / {totalRespondidas} respondidas
@@ -194,7 +196,7 @@ function QuestoesPage() {
                   onClick={proxima}
                   disabled={indice === questoes.length - 1}
                 >
-                  Proxima
+                  Próxima
                 </button>
               )}
             </div>
@@ -202,7 +204,7 @@ function QuestoesPage() {
 
           {concluiuTodas ? (
             <div className="quiz-finished">
-              <strong>Voce respondeu todas as questoes!</strong>
+              <strong>Você respondeu todas as questões!</strong>
               <span>
                 Acertou {totalAcertos} de {questoes.length} (
                 {Math.round((totalAcertos / questoes.length) * 100)}%).

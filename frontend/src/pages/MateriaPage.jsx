@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function MateriaPage() {
   const { materiaId } = useParams();
@@ -10,6 +11,7 @@ function MateriaPage() {
   const { logout, usuario } = useAuth();
 
   const [materia, setMateria] = useState(null);
+  useDocumentTitle(materia?.nome || 'Matéria');
   const [conteudos, setConteudos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -29,7 +31,7 @@ function MateriaPage() {
 
       const materiaAtual = materias.find((item) => String(item.id) === String(materiaId));
       if (!materiaAtual) {
-        setErrorMessage('Materia nao encontrada.');
+        setErrorMessage('Matéria não encontrada.');
         setMateria(null);
       } else {
         setMateria(materiaAtual);
@@ -81,11 +83,11 @@ function MateriaPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to="/dashboard">← Materias</Link>
+            <Link to="/dashboard">← Matérias</Link>
           </p>
-          <h1>{materia?.nome || 'Carregando materia...'}</h1>
+          <h1>{materia?.nome || 'Carregando matéria...'}</h1>
           <p className="dashboard-copy">
-            {materia?.descricao || 'Organize conteudos teoricos e gere material de estudo ativo.'}
+            {materia?.descricao || 'Organize conteúdos teóricos e gere material de estudo ativo.'}
           </p>
           <span className="user-chip">{usuario?.nome}</span>
         </div>
@@ -97,14 +99,14 @@ function MateriaPage() {
 
       <section className="content-grid">
         <article className="content-card">
-          <h2>Novo conteudo</h2>
+          <h2>Novo conteúdo</h2>
           <p className="muted">
-            Cole o texto teorico (resumo de aula, capitulo de apostila, lei seca) e o StudyAI vai
-            transformar em resumo, pontos-chave, questoes e flashcards.
+            Cole o texto teórico (resumo de aula, capítulo de apostila, lei seca) e o StudyAI vai
+            transformar em resumo, pontos-chave, questões e flashcards.
           </p>
           <form className="form" onSubmit={handleCreate}>
             <label className="field">
-              <span>Titulo</span>
+              <span>Título</span>
               <input
                 name="titulo"
                 type="text"
@@ -119,7 +121,7 @@ function MateriaPage() {
               <textarea
                 name="texto"
                 rows={8}
-                placeholder="Cole aqui o conteudo teorico"
+                placeholder="Cole aqui o conteúdo teórico"
                 value={formData.texto}
                 onChange={handleInputChange}
                 required
@@ -127,17 +129,17 @@ function MateriaPage() {
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
             <button type="submit" className="primary-button" disabled={isCreating}>
-              {isCreating ? 'Salvando...' : 'Criar conteudo'}
+              {isCreating ? 'Salvando...' : 'Criar conteúdo'}
             </button>
           </form>
         </article>
 
         <article className="content-card">
-          <h2>Conteudos cadastrados</h2>
-          {isLoading ? <p>Carregando conteudos...</p> : null}
+          <h2>Conteúdos cadastrados</h2>
+          {isLoading ? <p>Carregando conteúdos...</p> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && conteudos.length === 0 ? (
-            <p className="muted">Nenhum conteudo cadastrado ainda nesta materia.</p>
+            <p className="muted">Nenhum conteúdo cadastrado ainda nesta matéria.</p>
           ) : null}
           {!isLoading && conteudos.length > 0 ? (
             <ul className="matter-list">

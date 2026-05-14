@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthShell from '../shared/AuthShell';
 import { useAuth } from '../contexts/AuthContext';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function LoginPage() {
+  useDocumentTitle('Entrar');
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -74,7 +76,7 @@ function LoginPage() {
       </form>
 
       <p className="auth-link">
-        Ainda nao tem conta? <Link to="/cadastro">Criar cadastro</Link>
+        Ainda não tem conta? <Link to="/cadastro">Criar cadastro</Link>
       </p>
     </AuthShell>
   );
