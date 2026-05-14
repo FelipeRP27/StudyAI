@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
@@ -7,25 +7,48 @@ import { questaoService } from '../services/questaoService';
 import { flashcardService } from '../services/flashcardService';
 import { processamentoService } from '../services/processamentoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import CopyButton from '../shared/CopyButton';
+import Spinner from '../shared/Spinner';
+
+const STAGES = ['resumo', 'pontos_chave', 'questoes', 'flashcards'];
+
+const TIPO_LABEL = {
+  resumo: 'Resumo',
+  pontos_chave: 'Pontos-chave',
+  questoes: 'Questões',
+  flashcards: 'Flashcards',
+  completo: 'Completo'
+};
+
+const STATUS_LABEL = {
+  pendente: 'Aguardando',
+  processando: 'Processando',
+  concluido: 'Concluído',
+  erro: 'Erro'
+};
 
 const ABAS = [
-  { id: 'resumo', titulo: 'Resumo' },
-  { id: 'pontos_chave', titulo: 'Pontos-chave' },
-  { id: 'questoes', titulo: 'Questões' },
-  { id: 'flashcards', titulo: 'Flashcards' }
+  { id: 'resumo', titulo: TIPO_LABEL.resumo },
+  { id: 'pontos_chave', titulo: TIPO_LABEL.pontos_chave },
+  { id: 'questoes', titulo: TIPO_LABEL.questoes },
+  { id: 'flashcards', titulo: TIPO_LABEL.flashcards }
 ];
 
 function StatusBadge({ status }) {
   const classe = `badge badge-${status}`;
-  return <span className={classe}>{status}</span>;
+  return <span className={classe}>{STATUS_LABEL[status] || status}</span>;
 }
 
 function ResumoView({ resumos }) {
   if (!resumos || resumos.length === 0) {
     return <p className="muted">Nenhum resumo gerado ainda.</p>;
   }
+  const textoCopia = resumos.map((r) => r.texto).join('\n\n');
   return (
     <div className="stack">
+      <div className="tab-toolbar">
+        <CopyButton text={textoCopia} label="Copiar resumo" />
+      </div>
       {resumos.map((resumo) => (
         <article key={resumo.id} className="card-inner">
           <p>{resumo.texto}</p>
@@ -39,12 +62,18 @@ function PontosChaveView({ pontos }) {
   if (!pontos || pontos.length === 0) {
     return <p className="muted">Nenhum ponto-chave gerado ainda.</p>;
   }
+  const textoCopia = pontos.map((p) => `• ${p.texto}`).join('\n');
   return (
-    <ul className="bullet-list">
-      {pontos.map((ponto) => (
-        <li key={ponto.id}>{ponto.texto}</li>
-      ))}
-    </ul>
+    <div className="stack">
+      <div className="tab-toolbar">
+        <CopyButton text={textoCopia} label="Copiar pontos-chave" />
+      </div>
+      <ul className="bullet-list">
+        {pontos.map((ponto) => (
+          <li key={ponto.id}>{ponto.texto}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -59,7 +88,7 @@ function QuestoesView({ questoes, conteudoId }) {
         <div>
           <strong>{questoes.length} questões prontas</strong>
           <p className="muted">
-            Resolva no modo guiado: uma por vez, com feedback imediato e correcao automatica.
+            Resolva no modo guiado: uma por vez, com feedback imediato e correção automática.
           </p>
         </div>
         <Link to={`/conteudos/${conteudoId}/questoes`} className="primary-button small">
@@ -69,7 +98,7 @@ function QuestoesView({ questoes, conteudoId }) {
       <ul className="bullet-list">
         {questoes.slice(0, 5).map((questao, idx) => (
           <li key={questao.id}>
-            <strong>Questao {idx + 1}.</strong> {questao.enunciado}
+            <strong>Questão {idx + 1}.</strong> {questao.enunciado}
           </li>
         ))}
       </ul>
@@ -92,7 +121,7 @@ function FlashcardsView({ flashcards, conteudoId }) {
           <p className="muted">
             {revisados > 0
               ? `${revisados} revisado(s). Continue praticando no modo guiado.`
-              : 'Estude no modo guiado: virar carta, marcar revisado e avancar.'}
+              : 'Estude no modo guiado: virar carta, marcar revisado e avançar.'}
           </p>
         </div>
         <Link to={`/conteudos/${conteudoId}/flashcards`} className="primary-button small">
@@ -133,9 +162,17 @@ function ConteudoPage() {
 
   const [isGerando, setIsGerando] = useState(false);
   const [gerarError, setGerarError] = useState('');
-  const [gerarResumo, setGerarResumo] = useState(null);
+  const [etapasStatus, setEtapasStatus] = useState({});
 
   const [abaAtiva, setAbaAtiva] = useState('resumo');
+
+  const timersRef = useRef([]);
+  const clearTimers = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  };
+
+  useEffect(() => () => clearTimers(), []);
 
   const carregarMateriais = useCallback(async () => {
     const [conteudoData, resumosData, pontosData, questoesData, flashData, processData] =
@@ -179,15 +216,30 @@ function ConteudoPage() {
   const handleGerarEstudo = async () => {
     setIsGerando(true);
     setGerarError('');
-    setGerarResumo(null);
+    clearTimers();
+    setEtapasStatus(Object.fromEntries(STAGES.map((s) => [s, 'processando'])));
+
+    timersRef.current = STAGES.slice(0, -1).map((stage, i) =>
+      setTimeout(() => {
+        setEtapasStatus((prev) => ({ ...prev, [stage]: 'concluido' }));
+      }, (i + 1) * 7000)
+    );
 
     try {
       const resposta = await processamentoService.processarConteudo(conteudoId);
-      setGerarResumo(resposta);
+      const reais = {};
+      (resposta.tipos_executados || STAGES).forEach((t) => {
+        reais[t] = resposta.resultados?.[t]?.status || 'concluido';
+      });
+      setEtapasStatus(reais);
       await carregarMateriais();
     } catch (error) {
       setGerarError(error.message);
+      setEtapasStatus((prev) =>
+        Object.fromEntries(STAGES.map((s) => [s, prev[s] === 'processando' ? 'erro' : prev[s]]))
+      );
     } finally {
+      clearTimers();
       setIsGerando(false);
     }
   };
@@ -201,6 +253,8 @@ function ConteudoPage() {
     }),
     [resumos, pontosChave, questoes, flashcards]
   );
+
+  const temProgresso = isGerando || Object.keys(etapasStatus).length > 0;
 
   return (
     <main className="dashboard-page">
@@ -231,33 +285,42 @@ function ConteudoPage() {
           </section>
 
           <section className="content-card generator-card">
-            <div className="generator-header">
-              <div>
-                <h2>Gerar material de estudo com IA</h2>
-                <p className="muted">
-                  Dispara resumo, pontos-chave, questões e flashcards em uma única ação.
-                </p>
-              </div>
+            <div className="generator-header generator-centered">
+              <h2>Gerar material de estudo com IA</h2>
+              <p className="muted">
+                Dispara resumo, pontos-chave, questões e flashcards em uma única ação.
+              </p>
               <button
                 type="button"
-                className="primary-button"
+                className="primary-button button-with-spinner"
                 onClick={handleGerarEstudo}
                 disabled={isGerando}
               >
-                {isGerando ? 'Gerando com IA...' : 'Gerar estudo'}
+                {isGerando ? (
+                  <>
+                    <Spinner size={16} label="Gerando" />
+                    <span>Gerando com IA...</span>
+                  </>
+                ) : (
+                  <span>Gerar estudo</span>
+                )}
               </button>
             </div>
 
             {gerarError ? <p className="feedback error">{gerarError}</p> : null}
 
-            {gerarResumo ? (
+            {temProgresso ? (
               <div className="gen-summary">
-                {gerarResumo.tipos_executados.map((tipo) => {
-                  const status = gerarResumo.resultados?.[tipo]?.status || 'desconhecido';
+                {STAGES.map((tipo) => {
+                  const status = etapasStatus[tipo] || 'pendente';
                   return (
                     <div key={tipo} className={`gen-summary-item ${status}`}>
-                      <span>{tipo}</span>
-                      <StatusBadge status={status} />
+                      <span>{TIPO_LABEL[tipo]}</span>
+                      {status === 'processando' ? (
+                        <Spinner size={14} label="processando" />
+                      ) : (
+                        <StatusBadge status={status} />
+                      )}
                     </div>
                   );
                 })}
@@ -298,7 +361,7 @@ function ConteudoPage() {
               <ul className="history-list">
                 {processamentos.slice(0, 10).map((proc) => (
                   <li key={proc.id} className={`history-item ${proc.status}`}>
-                    <span className="history-tipo">{proc.tipo}</span>
+                    <span className="history-tipo">{TIPO_LABEL[proc.tipo] || proc.tipo}</span>
                     <StatusBadge status={proc.status} />
                     <span className="history-data">
                       {new Date(proc.iniciado_em).toLocaleString('pt-BR')}
