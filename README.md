@@ -123,7 +123,27 @@ npm run dev
 npm test
 ```
 
-Cobre os servicos da Sprint 3 (iaService, resumoService, pontoChaveService, questaoService, flashcardService, processamentoService) e da Sprint 4 (respostaService, tarefaService, tarefaOutputDto, desempenhoService) com mocks de Gemini e dos repositorios. Total: 52 testes.
+Cobre os servicos da Sprint 3 (iaService, resumoService, pontoChaveService, questaoService, flashcardService, processamentoService) e da Sprint 4 (respostaService, tarefaService, tarefaOutputDto, desempenhoService) com mocks de Gemini e dos repositorios. Total: 56 testes.
+
+## Preparacao para apresentacao
+
+Para uma demo rapida e estavel, popular o banco com dados pre-prontos:
+
+```bash
+docker exec -i studyai_db psql -U postgres -d studyai < src/config/seed.sql
+```
+
+Isso cria:
+- 1 usuario demo (login `demo@studyai.com` / senha `demo1234`)
+- 3 materias (Constitucional, Administrativo, Tributario)
+- 3 conteudos com resumos, pontos-chave, questoes e flashcards ja gerados
+- 5 tarefas com diferentes urgencias (vencida, urgente, proxima, normal, concluida)
+
+Checklist 5 minutos antes da demo:
+1. `docker compose ps` confirmando os 3 containers `Up` e o db `healthy`
+2. `docker logs studyai_backend --tail 5` mostra `Schema aplicado com sucesso`
+3. Logar com `demo@studyai.com` / `demo1234`, conferir stat-chips no Dashboard
+4. Cache de IA quente: clicar **Gerar estudo** em algum conteudo novo de teste antes da apresentacao, depois rodar a demo - a segunda chamada do mesmo conteudo retorna instantaneo (via `ia_cache`)
 
 ## Variaveis de ambiente
 
@@ -161,6 +181,7 @@ StudyAI/
 - Sprint 2 - Base funcional (MVP) (concluida)
 - Sprint 3 - Integracao com IA (concluida)
 - Sprint 4 - Estudo ativo: respostas, desempenho, tarefas, telas dedicadas (concluida)
+- Sprint 5 - Estabilizacao, cache de IA, validacoes, polimento visual e dados de demo (concluida)
 
 ## Autores
 

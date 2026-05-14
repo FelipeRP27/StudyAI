@@ -2,6 +2,11 @@ jest.mock('../config/env', () => ({
   env: { geminiApiKey: 'fake-key', geminiModel: 'gemini-2.5-flash' }
 }));
 
+jest.mock('../repositories/iaCacheRepository', () => ({
+  findByHash: jest.fn().mockResolvedValue(null),
+  upsert: jest.fn().mockResolvedValue(undefined)
+}));
+
 const mockGenerateContent = jest.fn();
 
 jest.mock('@google/generative-ai', () => ({
@@ -9,6 +14,8 @@ jest.mock('@google/generative-ai', () => ({
     getGenerativeModel: () => ({ generateContent: mockGenerateContent })
   }))
 }));
+
+const iaCacheRepository = require('../repositories/iaCacheRepository');
 
 const { extractJsonPayload, mapProviderError, generateJson } = require('../services/iaService');
 const AppError = require('../config/appError');
@@ -80,13 +87,32 @@ describe('iaService.mapProviderError', () => {
 describe('iaService.generateJson (retry)', () => {
   beforeEach(() => {
     mockGenerateContent.mockReset();
+    iaCacheRepository.findByHash.mockResolvedValue(null);
+    iaCacheRepository.upsert.mockResolvedValue(undefined);
     jest.useFakeTimers();
     jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
     jest.useRealTimers();
     console.error.mockRestore();
+    console.log.mockRestore();
+  });
+
+  test('retorna direto do cache quando ha hit, sem chamar o provedor', async () => {
+    iaCacheRepository.findByHash.mockResolvedValueOnce({
+      hash: 'h',
+      modelo: 'gemini-2.5-flash',
+      payload: { resumo: 'cached' },
+      created_at: '2026-05-10T00:00:00Z'
+    });
+
+    const result = await generateJson({ prompt: 'p', systemInstruction: 's' });
+
+    expect(result).toEqual({ resumo: 'cached' });
+    expect(mockGenerateContent).not.toHaveBeenCalled();
+    expect(iaCacheRepository.upsert).not.toHaveBeenCalled();
   });
 
   test('retenta em erro 503 e retorna sucesso na segunda tentativa', async () => {

@@ -1,6 +1,35 @@
 :root {
+  --color-primary: #0f62d6;
+  --color-primary-soft: rgba(15, 98, 214, 0.1);
+  --color-primary-border: rgba(15, 98, 214, 0.35);
+  --color-text: #102033;
+  --color-text-muted: #48627e;
+  --color-text-soft: #5a6d83;
+  --color-success: #1a7131;
+  --color-success-bg: #e8f7ea;
+  --color-danger: #9d1c1c;
+  --color-danger-bg: #fdecec;
+  --color-warn: #8a5a00;
+  --color-warn-bg: #fff4d6;
+  --color-surface: rgba(255, 255, 255, 0.85);
+  --color-surface-solid: #ffffff;
+  --color-border: rgba(173, 189, 209, 0.5);
+  --color-input-border: #cdd8e6;
+
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+
+  --shadow-card: 0 6px 20px rgba(15, 35, 70, 0.06);
+
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #102033;
+  color: var(--color-text);
   background:
     radial-gradient(circle at top left, rgba(97, 177, 255, 0.24), transparent 32%),
     linear-gradient(135deg, #f4f7fb 0%, #e7eef8 100%);
@@ -584,6 +613,38 @@ input {
   flex-wrap: wrap;
 }
 
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.stat-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.stat-chip strong {
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.stat-chip.warn {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.stat-chip.warn strong {
+  color: var(--color-danger);
+}
+
 .shortcut-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -960,5 +1021,52 @@ input {
 
   .evolucao-list li {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-page {
+    padding: 16px;
+  }
+
+  .dashboard-hero {
+    padding: 20px;
+    border-radius: var(--radius-lg);
+  }
+
+  .dashboard-hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .content-card {
+    padding: 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .stat-chips {
+    gap: 6px;
+  }
+
+  .stat-chip {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .quiz-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quiz-actions > button {
+    width: 100%;
+  }
+
+  .metric-value {
+    font-size: 1.4rem;
   }
 }

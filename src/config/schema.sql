@@ -194,3 +194,12 @@ CREATE INDEX IF NOT EXISTS idx_tarefas_usuario_id ON tarefas (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_tarefas_materia_id ON tarefas (materia_id);
 CREATE INDEX IF NOT EXISTS idx_tarefas_data_limite ON tarefas (data_limite);
 CREATE INDEX IF NOT EXISTS idx_tarefas_status ON tarefas (status);
+
+CREATE TABLE IF NOT EXISTS ia_cache (
+    hash CHAR(64) PRIMARY KEY,
+    modelo VARCHAR(60) NOT NULL,
+    payload JSONB NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ia_cache_created_at ON ia_cache (created_at);

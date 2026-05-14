@@ -1,8 +1,22 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 let authToken = null;
+let onUnauthorized = null;
 
 function setAuthToken(token) {
   authToken = token || null;
+}
+
+function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
+function buildFriendlyMessage(status, body) {
+  if (status === 401) return 'Sessao expirada. Faca login novamente.';
+  if (status === 403) return 'Voce nao tem permissao para esta acao.';
+  if (status === 404) return body?.message || 'Recurso nao encontrado.';
+  if (status === 429) return 'Muitas tentativas. Aguarde alguns instantes.';
+  if (status >= 500) return body?.message || 'Servico indisponivel no momento. Tente novamente.';
+  return body?.message || 'Erro ao processar a requisicao.';
 }
 
 async function request(path, options = {}) {
@@ -15,16 +29,28 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${authToken}`;
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
-    headers,
-    ...options
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      headers,
+      ...options
+    });
+  } catch (networkError) {
+    const err = new Error('Sem conexao com o servidor. Verifique sua internet ou se o backend esta no ar.');
+    err.isNetworkError = true;
+    throw err;
+  }
 
   const contentType = response.headers.get('content-type') || '';
   const body = contentType.includes('application/json') ? await response.json() : null;
 
   if (!response.ok) {
-    throw new Error(body?.message || 'Erro ao processar a requisicao');
+    if (response.status === 401 && onUnauthorized) {
+      onUnauthorized();
+    }
+    const err = new Error(buildFriendlyMessage(response.status, body));
+    err.status = response.status;
+    throw err;
   }
 
   return body;
@@ -32,5 +58,6 @@ async function request(path, options = {}) {
 
 export const api = {
   request,
-  setAuthToken
+  setAuthToken,
+  setUnauthorizedHandler
 };
