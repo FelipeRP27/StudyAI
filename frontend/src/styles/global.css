@@ -197,16 +197,24 @@ input {
   justify-content: center;
 }
 
+.auth-panel-brand .eyebrow {
+  color: rgba(246, 251, 255, 0.72);
+}
+
 .auth-panel-brand h1 {
+  color: #ffffff;
   font-size: clamp(2.2rem, 4vw, 3.8rem);
   line-height: 1.05;
   margin: 0 0 20px;
   max-width: 12ch;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.18);
 }
 
 .auth-panel-brand p {
+  color: rgba(246, 251, 255, 0.88);
   max-width: 42ch;
   font-size: 1.05rem;
+  line-height: 1.55;
 }
 
 .auth-panel-form {
