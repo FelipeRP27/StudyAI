@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart3, ChevronRight, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
+import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { SkeletonList } from '../shared/Skeleton';
 
@@ -13,6 +14,7 @@ function MateriaPage() {
   const [materia, setMateria] = useState(null);
   useDocumentTitle(materia?.nome || 'Matéria');
   const [conteudos, setConteudos] = useState([]);
+  const [desempenho, setDesempenho] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -31,9 +33,10 @@ function MateriaPage() {
     setErrorMessage('');
 
     try {
-      const [materias, listaConteudos] = await Promise.all([
+      const [materias, listaConteudos, desempenhoData] = await Promise.all([
         materiaService.listMaterias(),
-        conteudoService.listByMateria(materiaId)
+        conteudoService.listByMateria(materiaId),
+        desempenhoService.getByMateria(materiaId, { dias: 30 }).catch(() => null)
       ]);
 
       const materiaAtual = materias.find((item) => String(item.id) === String(materiaId));
@@ -44,6 +47,7 @@ function MateriaPage() {
         setMateria(materiaAtual);
       }
       setConteudos(listaConteudos);
+      setDesempenho(desempenhoData);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -221,6 +225,37 @@ function MateriaPage() {
           </>
         )}
       </section>
+
+      {desempenho && desempenho.resumo && desempenho.resumo.total_respostas > 0 ? (
+        <section className="content-card materia-desempenho-card">
+          <div className="materia-desempenho-info">
+            <div className="materia-desempenho-icon" aria-hidden="true">
+              <BarChart3 size={22} />
+            </div>
+            <div>
+              <span className="eyebrow">Seu desempenho nesta matéria</span>
+              <div className="materia-desempenho-chips">
+                <span className="stat-chip">
+                  <strong>{desempenho.resumo.total_respostas}</strong> respostas
+                </span>
+                <span className="stat-chip">
+                  <strong>{desempenho.resumo.total_acertos}</strong> acertos
+                </span>
+                <span className="stat-chip primary">
+                  <strong>{desempenho.resumo.taxa_acerto}%</strong> de acerto
+                </span>
+              </div>
+            </div>
+          </div>
+          <Link
+            to={`/desempenho/materias/${materiaId}`}
+            className="primary-button small button-with-spinner"
+          >
+            <span>Ver detalhes</span>
+            <ArrowRight size={14} />
+          </Link>
+        </section>
+      ) : null}
 
       <section className="content-grid">
         <article className="content-card">

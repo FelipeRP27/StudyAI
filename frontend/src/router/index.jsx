@@ -7,6 +7,7 @@ import ConteudoPage from '../pages/ConteudoPage';
 import QuestoesPage from '../pages/QuestoesPage';
 import FlashcardsPage from '../pages/FlashcardsPage';
 import DesempenhoPage from '../pages/DesempenhoPage';
+import DesempenhoMateriaPage from '../pages/DesempenhoMateriaPage';
 import TarefasPage from '../pages/TarefasPage';
 import ProtectedRoute from './ProtectedRoute';
 import PublicRoute from './PublicRoute';
@@ -75,6 +76,14 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <DesempenhoPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/desempenho/materias/:materiaId"
+        element={
+          <ProtectedRoute>
+            <DesempenhoMateriaPage />
           </ProtectedRoute>
         }
       />

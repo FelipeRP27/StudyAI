@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  ArrowRight,
-  BarChart3,
-  CheckCircle2,
-  ChevronRight,
-  Percent,
-  XCircle
-} from 'lucide-react';
-import Skeleton from '../shared/Skeleton';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, BarChart3, CheckCircle2, FileText, Percent, XCircle } from 'lucide-react';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import Skeleton from '../shared/Skeleton';
 
 function MetricCard({ label, value, accent, icon: Icon }) {
   return (
@@ -37,12 +29,13 @@ function BarraTaxa({ taxa }) {
   );
 }
 
-function DesempenhoPage() {
-  useDocumentTitle('Desempenho');
-
+function DesempenhoMateriaPage() {
+  const { materiaId } = useParams();
   const [dados, setDados] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useDocumentTitle(dados?.materia?.nome ? `Desempenho — ${dados.materia.nome}` : 'Desempenho');
 
   useEffect(() => {
     let ativo = true;
@@ -51,7 +44,7 @@ function DesempenhoPage() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const resposta = await desempenhoService.get({ dias: 30 });
+        const resposta = await desempenhoService.getByMateria(materiaId, { dias: 30 });
         if (ativo) setDados(resposta);
       } catch (error) {
         if (ativo) setErrorMessage(error.message);
@@ -63,39 +56,34 @@ function DesempenhoPage() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [materiaId]);
 
   const resumo = dados?.resumo;
-  const porMateria = dados?.por_materia || [];
+  const porConteudo = dados?.por_conteudo || [];
   const evolucao = dados?.evolucao || [];
+  const materia = dados?.materia;
 
-  const semDados =
-    !isLoading && !errorMessage && resumo && resumo.total_respostas === 0;
+  const semDados = !isLoading && !errorMessage && resumo && resumo.total_respostas === 0;
 
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to="/dashboard" className="back-link">
-              <ArrowLeft size={14} /> Dashboard
+            <Link to="/desempenho" className="back-link">
+              <ArrowLeft size={14} /> Desempenho
             </Link>
           </p>
-          <h1>Seu desempenho</h1>
+          <h1>{materia?.nome || 'Carregando matéria...'}</h1>
           <p className="dashboard-copy">
-            Estatísticas dos últimos 30 dias com base nas questões que você respondeu.
+            Como você está indo nesta matéria nos últimos 30 dias.
           </p>
         </div>
       </section>
 
       {isLoading ? (
         <>
-          <section
-            className="metric-grid"
-            style={{ marginBottom: 20 }}
-            aria-busy="true"
-            aria-label="Carregando desempenho"
-          >
+          <section className="metric-grid" style={{ marginBottom: 20 }}>
             <Skeleton height="92px" radius={18} />
             <Skeleton height="92px" radius={18} />
             <Skeleton height="92px" radius={18} />
@@ -111,6 +99,7 @@ function DesempenhoPage() {
           </section>
         </>
       ) : null}
+
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
       {!isLoading && !errorMessage && resumo ? (
@@ -145,14 +134,17 @@ function DesempenhoPage() {
             <section className="content-card">
               <div className="empty-state">
                 <BarChart3 size={40} className="empty-state-svg" aria-hidden="true" />
-                <strong>Comece resolvendo questões</strong>
+                <strong>Sem respostas nesta matéria ainda</strong>
                 <p className="muted">
-                  Você ainda não respondeu nenhuma questão. Acesse uma matéria, gere o material e
-                  comece a resolver para ver seu desempenho aqui.
+                  Acesse um conteúdo desta matéria, gere o material com IA e responda algumas
+                  questões para começar a ver suas métricas aqui.
                 </p>
-                <Link to="/dashboard" className="primary-button small button-with-spinner">
-                  <span>Ir para matérias</span>
-                  <ArrowRight size={14} />
+                <Link
+                  to={`/materias/${materiaId}`}
+                  className="primary-button small button-with-spinner"
+                >
+                  <ArrowLeft size={14} />
+                  <span>Ir para a matéria</span>
                 </Link>
               </div>
             </section>
@@ -160,32 +152,26 @@ function DesempenhoPage() {
             <>
               <section className="content-card">
                 <header className="section-with-legend">
-                  <h2>Desempenho por matéria</h2>
+                  <h2>Desempenho por conteúdo</h2>
                   <span className="legend muted">acertos / total respondidas</span>
                 </header>
-                {porMateria.length === 0 ? (
-                  <p className="muted">Sem dados por matéria ainda.</p>
+                {porConteudo.length === 0 ? (
+                  <p className="muted">Nenhum conteúdo com respostas registradas.</p>
                 ) : (
                   <ul className="materia-stats">
-                    {porMateria.map((item) => (
-                      <li key={item.materia_id} className="materia-stats-item">
-                        <Link
-                          to={`/desempenho/materias/${item.materia_id}`}
-                          className="materia-stats-link"
-                        >
-                          <header>
-                            <strong>{item.materia_nome}</strong>
-                            <span className="materia-stats-meta">
-                              <span
-                                title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
-                              >
-                                {item.total_acertos}/{item.total_respostas} ({item.taxa_acerto}%)
-                              </span>
-                              <ChevronRight size={16} aria-hidden="true" />
-                            </span>
-                          </header>
-                          <BarraTaxa taxa={item.taxa_acerto} />
-                        </Link>
+                    {porConteudo.map((item) => (
+                      <li key={item.conteudo_id}>
+                        <header>
+                          <Link to={`/conteudos/${item.conteudo_id}`} className="back-link">
+                            <FileText size={14} /> {item.conteudo_titulo}
+                          </Link>
+                          <span
+                            title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
+                          >
+                            {item.total_acertos}/{item.total_respostas} ({item.taxa_acerto}%)
+                          </span>
+                        </header>
+                        <BarraTaxa taxa={item.taxa_acerto} />
                       </li>
                     ))}
                   </ul>
@@ -226,4 +212,4 @@ function DesempenhoPage() {
   );
 }
 
-export default DesempenhoPage;
+export default DesempenhoMateriaPage;
