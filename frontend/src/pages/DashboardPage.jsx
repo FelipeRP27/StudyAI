@@ -16,6 +16,7 @@ import { tarefaService } from '../services/tarefaService';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { SkeletonList } from '../shared/Skeleton';
+import { getMateriaStripe } from '../shared/colorPalette';
 
 function DashboardPage() {
   useDocumentTitle('Dashboard');
@@ -91,8 +92,8 @@ function DashboardPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
+      <section className="dashboard-hero dashboard-hero-compact">
+        <div className="dashboard-hero-content">
           <p className="eyebrow">StudyAI</p>
           <h1>Olá, {usuario?.nome?.split(' ')[0] || 'estudante'}</h1>
           <p className="dashboard-copy">
@@ -103,11 +104,13 @@ function DashboardPage() {
               <BookOpen size={14} />
               <strong>{materias.length}</strong> matérias
             </span>
-            <span className={`stat-chip ${tarefasUrgentes.length > 0 ? 'warn' : ''}`}>
+            <span
+              className={`stat-chip ${tarefasUrgentes.length > 0 ? 'warn' : 'neutral'}`}
+            >
               {tarefasUrgentes.length > 0 ? <AlertCircle size={14} /> : <ListTodo size={14} />}
               <strong>{tarefasUrgentes.length}</strong> tarefas urgentes
             </span>
-            <span className="stat-chip">
+            <span className={`stat-chip ${totalRespostas > 0 ? 'success' : 'neutral'}`}>
               <Target size={14} />
               {totalRespostas > 0 ? (
                 <>
@@ -119,11 +122,17 @@ function DashboardPage() {
             </span>
           </div>
         </div>
+        <div className="dashboard-hero-decoration" aria-hidden="true" />
       </section>
 
       <section className="content-grid">
         <article className="content-card">
-          <h2>Nova matéria</h2>
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <Plus size={18} />
+            </span>
+            Nova matéria
+          </h2>
           <form className="form" onSubmit={handleCreate}>
             <label className="field">
               <span>Nome</span>
@@ -161,7 +170,12 @@ function DashboardPage() {
         </article>
 
         <article className="content-card">
-          <h2>Suas matérias</h2>
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <BookOpen size={18} />
+            </span>
+            Suas matérias
+          </h2>
           {isLoading ? <SkeletonList items={3} /> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && materias.length === 0 ? (
@@ -176,7 +190,11 @@ function DashboardPage() {
           {!isLoading && materias.length > 0 ? (
             <ul className="matter-list">
               {materias.map((materia) => (
-                <li key={materia.id} className="matter-item">
+                <li
+                  key={materia.id}
+                  className="matter-item"
+                  style={{ '--matter-stripe': getMateriaStripe(materia.id) }}
+                >
                   <Link to={`/materias/${materia.id}`}>
                     <div className="matter-item-text">
                       <strong>{materia.nome}</strong>
