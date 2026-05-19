@@ -1,11 +1,20 @@
 jest.mock('../repositories/respostaRepository', () => ({
   getDesempenhoResumo: jest.fn(),
   getDesempenhoPorMateria: jest.fn(),
-  getEvolucaoDiaria: jest.fn()
+  getEvolucaoDiaria: jest.fn(),
+  getResumoPorMateria: jest.fn(),
+  getDesempenhoPorConteudoEmMateria: jest.fn(),
+  getEvolucaoDiariaPorMateria: jest.fn()
+}));
+
+jest.mock('../repositories/materiaRepository', () => ({
+  findByIdAndUserId: jest.fn()
 }));
 
 const respostaRepository = require('../repositories/respostaRepository');
+const materiaRepository = require('../repositories/materiaRepository');
 const desempenhoService = require('../services/desempenhoService');
+const AppError = require('../config/appError');
 
 describe('desempenhoService.getDesempenho', () => {
   beforeEach(() => {
@@ -51,5 +60,61 @@ describe('desempenhoService.getDesempenho', () => {
     expect(output.resumo.taxa_acerto).toBe(0);
     expect(output.por_materia).toEqual([]);
     expect(output.evolucao).toEqual([]);
+  });
+});
+
+describe('desempenhoService.getDesempenhoPorMateria', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('valida ownership, agrega resumo, por_conteudo e evolucao com taxa', async () => {
+    materiaRepository.findByIdAndUserId.mockResolvedValue({
+      id: 7,
+      nome: 'Direito Constitucional',
+      descricao: 'Princípios e direitos fundamentais'
+    });
+    respostaRepository.getResumoPorMateria.mockResolvedValue({
+      total_respostas: 8,
+      total_acertos: 6,
+      total_erros: 2
+    });
+    respostaRepository.getDesempenhoPorConteudoEmMateria.mockResolvedValue([
+      { conteudo_id: 10, conteudo_titulo: 'Princípios', total_respostas: 4, total_acertos: 4 },
+      { conteudo_id: 11, conteudo_titulo: 'Direitos sociais', total_respostas: 4, total_acertos: 2 }
+    ]);
+    respostaRepository.getEvolucaoDiariaPorMateria.mockResolvedValue([
+      { dia: '2026-05-10', total_respostas: 5, total_acertos: 4 }
+    ]);
+
+    const output = await desempenhoService.getDesempenhoPorMateria({
+      materiaId: 7,
+      usuarioId: 1,
+      dias: 30
+    });
+
+    expect(materiaRepository.findByIdAndUserId).toHaveBeenCalledWith(7, 1);
+    expect(output.materia).toEqual({
+      id: 7,
+      nome: 'Direito Constitucional',
+      descricao: 'Princípios e direitos fundamentais'
+    });
+    expect(output.resumo.taxa_acerto).toBe(75);
+    expect(output.por_conteudo).toHaveLength(2);
+    expect(output.por_conteudo[0]).toEqual(
+      expect.objectContaining({ conteudo_titulo: 'Princípios', taxa_acerto: 100 })
+    );
+    expect(output.por_conteudo[1].taxa_acerto).toBe(50);
+    expect(output.evolucao[0].taxa_acerto).toBe(80);
+    expect(respostaRepository.getEvolucaoDiariaPorMateria).toHaveBeenCalledWith(7, 1, 30);
+  });
+
+  test('lanca AppError 404 quando materia nao pertence ao usuario', async () => {
+    materiaRepository.findByIdAndUserId.mockResolvedValue(null);
+
+    await expect(
+      desempenhoService.getDesempenhoPorMateria({ materiaId: 99, usuarioId: 1 })
+    ).rejects.toThrow(AppError);
+    expect(respostaRepository.getResumoPorMateria).not.toHaveBeenCalled();
   });
 });

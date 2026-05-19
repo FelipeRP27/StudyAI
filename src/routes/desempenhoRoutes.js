@@ -7,5 +7,6 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.get('/', desempenhoController.get);
+router.get('/materias/:materiaId', desempenhoController.getByMateria);
 
 module.exports = router;
