@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BarChart3, CheckCircle2, Percent, XCircle } from 'lucide-react';
+import Skeleton from '../shared/Skeleton';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 
@@ -79,7 +80,29 @@ function DesempenhoPage() {
         </div>
       </section>
 
-      {isLoading ? <p>Carregando desempenho...</p> : null}
+      {isLoading ? (
+        <>
+          <section
+            className="metric-grid"
+            style={{ marginBottom: 20 }}
+            aria-busy="true"
+            aria-label="Carregando desempenho"
+          >
+            <Skeleton height="92px" radius={18} />
+            <Skeleton height="92px" radius={18} />
+            <Skeleton height="92px" radius={18} />
+            <Skeleton height="92px" radius={18} />
+          </section>
+          <section className="content-card">
+            <Skeleton width="40%" height="1.1rem" />
+            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <Skeleton height="36px" />
+              <Skeleton height="36px" />
+              <Skeleton height="36px" />
+            </div>
+          </section>
+        </>
+      ) : null}
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
       {!isLoading && !errorMessage && resumo ? (

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookmarkCheck, BookmarkMinus, Layers, RotateCw } from 'lucide-react';
+import Skeleton from '../shared/Skeleton';
 import { conteudoService } from '../services/conteudoService';
 import { flashcardService } from '../services/flashcardService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -94,7 +95,17 @@ function FlashcardsPage() {
       </section>
 
       {isLoading ? (
-        <p>Carregando flashcards...</p>
+        <section className="content-card">
+          <Skeleton width="40%" height="1.1rem" />
+          <div style={{ marginTop: 16 }}>
+            <Skeleton height="260px" radius={18} />
+          </div>
+          <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+            <Skeleton width="32%" height="44px" />
+            <Skeleton width="36%" height="44px" />
+            <Skeleton width="32%" height="44px" />
+          </div>
+        </section>
       ) : flashcards.length === 0 ? (
         <section className="content-card">
           <div className="empty-state">

@@ -10,6 +10,7 @@ import { processamentoService } from '../services/processamentoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import CopyButton from '../shared/CopyButton';
 import Spinner from '../shared/Spinner';
+import Skeleton, { SkeletonText } from '../shared/Skeleton';
 
 const STAGES = ['resumo', 'pontos_chave', 'questoes', 'flashcards'];
 
@@ -312,7 +313,12 @@ function ConteudoPage() {
       </section>
 
       {isLoading ? (
-        <p>Carregando conteúdo...</p>
+        <section className="content-card">
+          <Skeleton width="40%" height="1.4rem" />
+          <div style={{ marginTop: 14 }}>
+            <SkeletonText lines={4} />
+          </div>
+        </section>
       ) : errorMessage ? (
         <p className="feedback error">{errorMessage}</p>
       ) : (

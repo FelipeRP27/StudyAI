@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpenCheck, RotateCcw, Trophy } from 'lucide-react';
+import Skeleton, { SkeletonText } from '../shared/Skeleton';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -105,7 +106,18 @@ function QuestoesPage() {
       </section>
 
       {isLoading ? (
-        <p>Carregando questões...</p>
+        <section className="content-card">
+          <Skeleton width="35%" height="1.1rem" />
+          <div style={{ marginTop: 18 }}>
+            <SkeletonText lines={2} />
+          </div>
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+          </div>
+        </section>
       ) : errorMessage && questoes.length === 0 ? (
         <p className="feedback error">{errorMessage}</p>
       ) : questoes.length === 0 ? (

@@ -15,6 +15,7 @@ import { materiaService } from '../services/materiaService';
 import { tarefaService } from '../services/tarefaService';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import { SkeletonList } from '../shared/Skeleton';
 
 function DashboardPage() {
   useDocumentTitle('Dashboard');
@@ -161,7 +162,7 @@ function DashboardPage() {
 
         <article className="content-card">
           <h2>Suas matérias</h2>
-          {isLoading ? <p>Carregando matérias...</p> : null}
+          {isLoading ? <SkeletonList items={3} /> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && materias.length === 0 ? (
             <div className="empty-state">

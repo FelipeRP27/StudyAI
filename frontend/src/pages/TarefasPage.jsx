@@ -11,6 +11,7 @@ import {
   RotateCcw,
   Trash2
 } from 'lucide-react';
+import { SkeletonList } from '../shared/Skeleton';
 import { tarefaService } from '../services/tarefaService';
 import { materiaService } from '../services/materiaService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -250,7 +251,7 @@ function TarefasPage() {
 
         <article className="content-card">
           <h2>Suas tarefas</h2>
-          {isLoading ? <p>Carregando tarefas...</p> : null}
+          {isLoading ? <SkeletonList items={4} lines={3} /> : null}
           {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
           {!isLoading && tarefas.length === 0 ? (

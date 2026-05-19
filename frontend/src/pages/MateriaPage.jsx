@@ -4,6 +4,7 @@ import { ArrowLeft, ChevronRight, FileText, Pencil, Plus, Trash2 } from 'lucide-
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import { SkeletonList } from '../shared/Skeleton';
 
 function MateriaPage() {
   const { materiaId } = useParams();
@@ -271,7 +272,7 @@ function MateriaPage() {
 
         <article className="content-card">
           <h2>Conteúdos cadastrados</h2>
-          {isLoading ? <p>Carregando conteúdos...</p> : null}
+          {isLoading ? <SkeletonList items={3} /> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && conteudos.length === 0 ? (
             <div className="empty-state">
