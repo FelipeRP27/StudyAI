@@ -1,20 +1,28 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 
 function MateriaPage() {
   const { materiaId } = useParams();
+  const navigate = useNavigate();
 
   const [materia, setMateria] = useState(null);
   useDocumentTitle(materia?.nome || 'Matéria');
   const [conteudos, setConteudos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
   const [formData, setFormData] = useState({ titulo: '', texto: '' });
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ nome: '', descricao: '' });
+  const [editError, setEditError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -70,18 +78,142 @@ function MateriaPage() {
     }
   };
 
+  const handleStartEdit = () => {
+    if (!materia) return;
+    setEditForm({
+      nome: materia.nome || '',
+      descricao: materia.descricao || ''
+    });
+    setEditError('');
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditError('');
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+    setEditForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSaveEdit = async (event) => {
+    event.preventDefault();
+    setEditError('');
+    setIsSaving(true);
+
+    try {
+      const atualizada = await materiaService.update(materiaId, {
+        nome: editForm.nome,
+        descricao: editForm.descricao || null
+      });
+      setMateria(atualizada);
+      setIsEditing(false);
+    } catch (error) {
+      setEditError(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!materia) return;
+    const totalConteudos = conteudos.length;
+    const aviso =
+      totalConteudos > 0
+        ? `Excluir a matéria "${materia.nome}"?\n\nIsso vai apagar permanentemente ${totalConteudos} conteúdo(s) e todo o material gerado por IA (resumos, pontos-chave, questões, alternativas, flashcards e respostas registradas).\n\nTarefas vinculadas a essa matéria não serão excluídas — apenas perderão o vínculo.`
+        : `Excluir a matéria "${materia.nome}"?\n\nEssa ação não pode ser desfeita.`;
+
+    if (!window.confirm(aviso)) return;
+
+    setIsDeleting(true);
+    try {
+      await materiaService.remove(materiaId);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrorMessage(error.message);
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/dashboard">← Matérias</Link>
-          </p>
-          <h1>{materia?.nome || 'Carregando matéria...'}</h1>
-          <p className="dashboard-copy">
-            {materia?.descricao || 'Organize conteúdos teóricos e gere material de estudo ativo.'}
-          </p>
-        </div>
+        {isEditing ? (
+          <form className="form materia-edit-form" onSubmit={handleSaveEdit}>
+            <p className="eyebrow">Editando matéria</p>
+            <label className="field">
+              <span>Nome</span>
+              <input
+                name="nome"
+                type="text"
+                value={editForm.nome}
+                onChange={handleEditChange}
+                required
+                autoFocus
+              />
+            </label>
+            <label className="field">
+              <span>Descrição</span>
+              <input
+                name="descricao"
+                type="text"
+                value={editForm.descricao}
+                onChange={handleEditChange}
+                placeholder="Opcional"
+              />
+            </label>
+            {editError ? <p className="feedback error">{editError}</p> : null}
+            <div className="form-actions">
+              <button type="submit" className="primary-button" disabled={isSaving}>
+                {isSaving ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={handleCancelEdit}
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <div>
+              <p className="eyebrow">
+                <Link to="/dashboard">← Matérias</Link>
+              </p>
+              <h1>{materia?.nome || 'Carregando matéria...'}</h1>
+              <p className="dashboard-copy">
+                {materia?.descricao ||
+                  'Organize conteúdos teóricos e gere material de estudo ativo.'}
+              </p>
+            </div>
+
+            {materia ? (
+              <div className="hero-actions">
+                <button
+                  type="button"
+                  className="secondary-button small"
+                  onClick={handleStartEdit}
+                  disabled={isDeleting}
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button small danger"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Excluindo...' : 'Excluir'}
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
       </section>
 
       <section className="content-grid">
@@ -97,7 +229,7 @@ function MateriaPage() {
               <input
                 name="titulo"
                 type="text"
-                placeholder="Ex: Principios da Administracao Publica"
+                placeholder="Ex: Princípios da Administração Pública"
                 value={formData.titulo}
                 onChange={handleInputChange}
                 required
@@ -137,12 +269,15 @@ function MateriaPage() {
               {conteudos.map((conteudo) => (
                 <li key={conteudo.id} className="matter-item">
                   <Link to={`/conteudos/${conteudo.id}`}>
-                    <strong>{conteudo.titulo}</strong>
-                    <span>
-                      {conteudo.texto.length > 140
-                        ? `${conteudo.texto.slice(0, 140)}...`
-                        : conteudo.texto}
-                    </span>
+                    <div className="matter-item-text">
+                      <strong>{conteudo.titulo}</strong>
+                      <span>
+                        {conteudo.texto.length > 140
+                          ? `${conteudo.texto.slice(0, 140)}...`
+                          : conteudo.texto}
+                      </span>
+                    </div>
+                    <span className="matter-item-arrow" aria-hidden="true">›</span>
                   </Link>
                 </li>
               ))}

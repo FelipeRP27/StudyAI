@@ -232,6 +232,20 @@ input {
   backdrop-filter: blur(10px);
 }
 
+.hero-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.materia-edit-form {
+  width: 100%;
+}
+
+.materia-edit-form .field input {
+  background: rgba(255, 255, 255, 0.95);
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
