@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { KeyRound, LogIn } from 'lucide-react';
 import AuthShell from '../shared/AuthShell';
 import Spinner from '../shared/Spinner';
 import { useAuth } from '../contexts/AuthContext';
@@ -99,12 +100,17 @@ function LoginPage() {
               <span>Entrando...</span>
             </>
           ) : (
-            <span>Entrar</span>
+            <>
+              <LogIn size={16} />
+              <span>Entrar</span>
+            </>
           )}
         </button>
 
         <p className="auth-link auth-link-helper">
-          <Link to="/recuperar-senha">Esqueci minha senha</Link>
+          <Link to="/recuperar-senha">
+            <KeyRound size={14} /> Esqueci minha senha
+          </Link>
         </p>
       </form>
 

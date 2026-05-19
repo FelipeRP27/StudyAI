@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  ListTodo,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Trash2
+} from 'lucide-react';
 import { tarefaService } from '../services/tarefaService';
 import { materiaService } from '../services/materiaService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -150,7 +161,9 @@ function TarefasPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to="/dashboard">← Dashboard</Link>
+            <Link to="/dashboard" className="back-link">
+              <ArrowLeft size={14} /> Dashboard
+            </Link>
           </p>
           <h1>Tarefas de estudo</h1>
           <p className="dashboard-copy">
@@ -211,8 +224,15 @@ function TarefasPage() {
             </label>
             {formError ? <p className="feedback error">{formError}</p> : null}
             <div className="form-actions">
-              <button type="submit" className="primary-button" disabled={isSaving}>
-                {isSaving ? 'Salvando...' : editandoId ? 'Salvar alterações' : 'Criar tarefa'}
+              <button type="submit" className="primary-button button-with-spinner" disabled={isSaving}>
+                {isSaving ? (
+                  <span>Salvando...</span>
+                ) : (
+                  <>
+                    <Plus size={16} />
+                    <span>{editandoId ? 'Salvar alterações' : 'Criar tarefa'}</span>
+                  </>
+                )}
               </button>
               {editandoId ? (
                 <button
@@ -234,12 +254,21 @@ function TarefasPage() {
           {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
           {!isLoading && tarefas.length === 0 ? (
-            <p className="muted">Nenhuma tarefa cadastrada ainda.</p>
+            <div className="empty-state">
+              <ListTodo size={36} className="empty-state-svg" aria-hidden="true" />
+              <strong>Nenhuma tarefa ainda</strong>
+              <p className="muted">
+                Use o formulário ao lado para criar sua primeira tarefa de estudo e organizar
+                prazos.
+              </p>
+            </div>
           ) : null}
 
           {urgentes.length > 0 ? (
             <div className="task-section urgent">
-              <h3>Atenção — prazos críticos</h3>
+              <h3>
+                <AlertTriangle size={16} /> Atenção — prazos críticos
+              </h3>
               <ul className="task-list">
                 {urgentes.map((tarefa) => (
                   <TaskItem
@@ -281,6 +310,9 @@ function TaskItem({ tarefa, onEdit, onConcluir, onExcluir }) {
         <div className="task-header">
           <strong className={concluida ? 'task-title done' : 'task-title'}>{tarefa.titulo}</strong>
           <span className={`task-badge urgencia-${tarefa.urgencia}`}>
+            {tarefa.urgencia === 'vencida' || tarefa.urgencia === 'urgente' ? (
+              <AlertCircle size={12} aria-hidden="true" />
+            ) : null}
             {URGENCIA_LABEL[tarefa.urgencia]}
           </span>
         </div>
@@ -297,14 +329,32 @@ function TaskItem({ tarefa, onEdit, onConcluir, onExcluir }) {
         </div>
       </div>
       <div className="task-actions">
-        <button type="button" className="secondary-button small" onClick={() => onConcluir(tarefa)}>
-          {concluida ? 'Reabrir' : 'Concluir'}
+        <button
+          type="button"
+          className="secondary-button small button-with-spinner"
+          onClick={() => onConcluir(tarefa)}
+          aria-label={concluida ? 'Reabrir tarefa' : 'Concluir tarefa'}
+        >
+          {concluida ? <RotateCcw size={14} /> : <CheckCircle2 size={14} />}
+          <span>{concluida ? 'Reabrir' : 'Concluir'}</span>
         </button>
-        <button type="button" className="secondary-button small" onClick={() => onEdit(tarefa)}>
-          Editar
+        <button
+          type="button"
+          className="secondary-button small button-with-spinner"
+          onClick={() => onEdit(tarefa)}
+          aria-label="Editar tarefa"
+        >
+          <Pencil size={14} />
+          <span>Editar</span>
         </button>
-        <button type="button" className="secondary-button small danger" onClick={() => onExcluir(tarefa)}>
-          Excluir
+        <button
+          type="button"
+          className="secondary-button small danger button-with-spinner"
+          onClick={() => onExcluir(tarefa)}
+          aria-label="Excluir tarefa"
+        >
+          <Trash2 size={14} />
+          <span>Excluir</span>
         </button>
       </div>
     </li>

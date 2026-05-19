@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 
 function CopyButton({ text, label = 'Copiar' }) {
   const [copiado, setCopiado] = useState(false);
@@ -20,7 +21,8 @@ function CopyButton({ text, label = 'Copiar' }) {
       onClick={handleCopy}
       aria-label={label}
     >
-      {copiado ? '✓ Copiado' : label}
+      {copiado ? <Check size={14} /> : <Copy size={14} />}
+      <span>{copiado ? 'Copiado' : label}</span>
     </button>
   );
 }

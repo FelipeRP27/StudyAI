@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, BookOpenCheck, RotateCcw, Trophy } from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -92,7 +93,9 @@ function QuestoesPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteúdo</Link>
+            <Link to={`/conteudos/${conteudoId}`} className="back-link">
+              <ArrowLeft size={14} /> Voltar ao conteúdo
+            </Link>
           </p>
           <h1>Resolver questões</h1>
           <p className="dashboard-copy">
@@ -107,27 +110,39 @@ function QuestoesPage() {
         <p className="feedback error">{errorMessage}</p>
       ) : questoes.length === 0 ? (
         <section className="content-card">
-          <p className="muted">
-            Nenhuma questão gerada para este conteúdo. Volte ao conteúdo e gere o material com IA.
-          </p>
+          <div className="empty-state">
+            <BookOpenCheck size={36} className="empty-state-svg" aria-hidden="true" />
+            <strong>Nenhuma questão para resolver</strong>
+            <p className="muted">
+              Volte ao conteúdo e clique em <strong>Gerar estudo</strong> para a IA criar as
+              questões.
+            </p>
+            <Link to={`/conteudos/${conteudoId}`} className="primary-button small button-with-spinner">
+              <ArrowLeft size={14} />
+              <span>Voltar ao conteúdo</span>
+            </Link>
+          </div>
         </section>
       ) : concluiuTodas ? (
         <section className="content-card quiz-summary">
-          <div className="quiz-summary-icon" aria-hidden="true">🎯</div>
+          <Trophy size={56} className="quiz-summary-icon" aria-hidden="true" />
           <h2>Você concluiu todas as questões!</h2>
           <p className="quiz-summary-score">
             <strong>{totalAcertos}</strong> de <strong>{questoes.length}</strong> corretas (
             {Math.round((totalAcertos / questoes.length) * 100)}% de acerto)
           </p>
           <div className="quiz-summary-actions">
-            <button type="button" className="secondary-button" onClick={refazer}>
-              Refazer
+            <button type="button" className="secondary-button button-with-spinner" onClick={refazer}>
+              <RotateCcw size={16} />
+              <span>Refazer</span>
             </button>
-            <Link to={`/conteudos/${conteudoId}`} className="secondary-button">
-              Voltar ao conteúdo
+            <Link to={`/conteudos/${conteudoId}`} className="secondary-button button-with-spinner">
+              <ArrowLeft size={16} />
+              <span>Voltar ao conteúdo</span>
             </Link>
-            <Link to="/desempenho" className="primary-button">
-              Ver desempenho
+            <Link to="/desempenho" className="primary-button button-with-spinner">
+              <span>Ver desempenho</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
         </section>
@@ -186,11 +201,12 @@ function QuestoesPage() {
             <div className="quiz-actions">
               <button
                 type="button"
-                className="secondary-button small quiz-nav"
+                className="secondary-button small quiz-nav button-with-spinner"
                 onClick={anterior}
                 disabled={indice === 0}
               >
-                ← Anterior
+                <ArrowLeft size={14} />
+                <span>Anterior</span>
               </button>
 
               {!feedbackAtual ? (
@@ -205,10 +221,11 @@ function QuestoesPage() {
               ) : (
                 <button
                   type="button"
-                  className="primary-button"
+                  className="primary-button button-with-spinner"
                   onClick={proxima}
                 >
-                  {indice === questoes.length - 1 ? 'Ver resultado' : 'Próxima →'}
+                  <span>{indice === questoes.length - 1 ? 'Ver resultado' : 'Próxima'}</span>
+                  <ArrowRight size={14} />
                 </button>
               )}
             </div>

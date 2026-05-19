@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, BookOpenCheck, FileText, Layers, Lightbulb, Sparkles } from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
 import { pontoChaveService } from '../services/pontoChaveService';
@@ -41,7 +42,15 @@ function StatusBadge({ status }) {
 
 function ResumoView({ resumos }) {
   if (!resumos || resumos.length === 0) {
-    return <p className="muted">Nenhum resumo gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <FileText size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Resumo ainda não gerado</strong>
+        <p className="muted">
+          Clique em <strong>Gerar estudo</strong> acima para a IA produzir um resumo deste conteúdo.
+        </p>
+      </div>
+    );
   }
   const textoCopia = resumos.map((r) => r.texto).join('\n\n');
   return (
@@ -60,7 +69,15 @@ function ResumoView({ resumos }) {
 
 function PontosChaveView({ pontos }) {
   if (!pontos || pontos.length === 0) {
-    return <p className="muted">Nenhum ponto-chave gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <Lightbulb size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Pontos-chave ainda não gerados</strong>
+        <p className="muted">
+          A IA vai extrair os tópicos mais importantes deste conteúdo quando você gerar o estudo.
+        </p>
+      </div>
+    );
   }
   const textoCopia = pontos.map((p) => `• ${p.texto}`).join('\n');
   return (
@@ -79,7 +96,16 @@ function PontosChaveView({ pontos }) {
 
 function QuestoesView({ questoes, conteudoId }) {
   if (!questoes || questoes.length === 0) {
-    return <p className="muted">Nenhuma questão gerada ainda.</p>;
+    return (
+      <div className="empty-state">
+        <BookOpenCheck size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Questões ainda não geradas</strong>
+        <p className="muted">
+          Gere o material com IA e venha resolver questões de múltipla escolha com correção
+          automática.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -108,7 +134,15 @@ function QuestoesView({ questoes, conteudoId }) {
 
 function FlashcardsView({ flashcards, conteudoId }) {
   if (!flashcards || flashcards.length === 0) {
-    return <p className="muted">Nenhum flashcard gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <Layers size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Flashcards ainda não gerados</strong>
+        <p className="muted">
+          A IA cria cartões com pergunta e resposta para você revisar no modo guiado.
+        </p>
+      </div>
+    );
   }
 
   const revisados = flashcards.filter((c) => c.revisado_em).length;
@@ -262,11 +296,15 @@ function ConteudoPage() {
         <div>
           {conteudo ? (
             <p className="eyebrow">
-              <Link to={`/materias/${conteudo.materia_id}`}>← Voltar para matéria</Link>
+              <Link to={`/materias/${conteudo.materia_id}`} className="back-link">
+                <ArrowLeft size={14} /> Voltar para matéria
+              </Link>
             </p>
           ) : (
             <p className="eyebrow">
-              <Link to="/dashboard">← Dashboard</Link>
+              <Link to="/dashboard" className="back-link">
+                <ArrowLeft size={14} /> Dashboard
+              </Link>
             </p>
           )}
           <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
@@ -302,7 +340,10 @@ function ConteudoPage() {
                     <span>Gerando com IA...</span>
                   </>
                 ) : (
-                  <span>Gerar estudo</span>
+                  <>
+                    <Sparkles size={16} />
+                    <span>Gerar estudo</span>
+                  </>
                 )}
               </button>
             </div>

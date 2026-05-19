@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, BarChart3, CheckCircle2, Percent, XCircle } from 'lucide-react';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 
-function MetricCard({ label, value, accent }) {
+function MetricCard({ label, value, accent, icon: Icon }) {
   return (
     <article className={`metric-card ${accent || ''}`}>
+      {Icon ? <Icon size={20} className="metric-icon" aria-hidden="true" /> : null}
       <span className="metric-label">{label}</span>
       <strong className="metric-value">{value}</strong>
     </article>
@@ -66,7 +68,9 @@ function DesempenhoPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to="/dashboard">← Dashboard</Link>
+            <Link to="/dashboard" className="back-link">
+              <ArrowLeft size={14} /> Dashboard
+            </Link>
           </p>
           <h1>Seu desempenho</h1>
           <p className="dashboard-copy">
@@ -81,22 +85,45 @@ function DesempenhoPage() {
       {!isLoading && !errorMessage && resumo ? (
         <>
           <section className="metric-grid">
-            <MetricCard label="Respostas totais" value={resumo.total_respostas} />
-            <MetricCard label="Acertos" value={resumo.total_acertos} accent="good" />
-            <MetricCard label="Erros" value={resumo.total_erros} accent="bad" />
-            <MetricCard label="Taxa de acerto" value={`${resumo.taxa_acerto}%`} accent="primary" />
+            <MetricCard
+              label="Respostas totais"
+              value={resumo.total_respostas}
+              icon={BarChart3}
+            />
+            <MetricCard
+              label="Acertos"
+              value={resumo.total_acertos}
+              accent="good"
+              icon={CheckCircle2}
+            />
+            <MetricCard
+              label="Erros"
+              value={resumo.total_erros}
+              accent="bad"
+              icon={XCircle}
+            />
+            <MetricCard
+              label="Taxa de acerto"
+              value={`${resumo.taxa_acerto}%`}
+              accent="primary"
+              icon={Percent}
+            />
           </section>
 
           {semDados ? (
             <section className="content-card">
-              <h2>Comece resolvendo questões</h2>
-              <p className="muted">
-                Você ainda não respondeu nenhuma questão. Acesse uma matéria, gere o material e
-                comece a resolver para ver seu desempenho aqui.
-              </p>
-              <Link to="/dashboard" className="primary-button small">
-                Ir para matérias
-              </Link>
+              <div className="empty-state">
+                <BarChart3 size={40} className="empty-state-svg" aria-hidden="true" />
+                <strong>Comece resolvendo questões</strong>
+                <p className="muted">
+                  Você ainda não respondeu nenhuma questão. Acesse uma matéria, gere o material e
+                  comece a resolver para ver seu desempenho aqui.
+                </p>
+                <Link to="/dashboard" className="primary-button small button-with-spinner">
+                  <span>Ir para matérias</span>
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
             </section>
           ) : (
             <>

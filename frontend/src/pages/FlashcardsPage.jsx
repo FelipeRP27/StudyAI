@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, BookmarkCheck, BookmarkMinus, Layers, RotateCw } from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { flashcardService } from '../services/flashcardService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -83,7 +84,9 @@ function FlashcardsPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteúdo</Link>
+            <Link to={`/conteudos/${conteudoId}`} className="back-link">
+              <ArrowLeft size={14} /> Voltar ao conteúdo
+            </Link>
           </p>
           <h1>Flashcards</h1>
           <p className="dashboard-copy">{conteudo?.titulo || 'Carregando...'}</p>
@@ -94,9 +97,18 @@ function FlashcardsPage() {
         <p>Carregando flashcards...</p>
       ) : flashcards.length === 0 ? (
         <section className="content-card">
-          <p className="muted">
-            Nenhum flashcard gerado para este conteúdo. Volte ao conteúdo e gere o material com IA.
-          </p>
+          <div className="empty-state">
+            <Layers size={36} className="empty-state-svg" aria-hidden="true" />
+            <strong>Nenhum flashcard para estudar</strong>
+            <p className="muted">
+              Volte ao conteúdo e clique em <strong>Gerar estudo</strong> para a IA criar os
+              flashcards.
+            </p>
+            <Link to={`/conteudos/${conteudoId}`} className="primary-button small button-with-spinner">
+              <ArrowLeft size={14} />
+              <span>Voltar ao conteúdo</span>
+            </Link>
+          </div>
         </section>
       ) : (
         <section className="content-card">
@@ -136,14 +148,14 @@ function FlashcardsPage() {
                 <span className="flashcard-label">Pergunta</span>
                 <p>{cardAtual.frente}</p>
                 <span className="flashcard-hint flashcard-hint-center">
-                  <span aria-hidden="true">↻</span> Clique para virar
+                  <RotateCw size={14} aria-hidden="true" /> Clique para virar
                 </span>
               </div>
               <div className="flashcard-face flashcard-face-back">
                 <span className="flashcard-label">Resposta</span>
                 <p>{cardAtual.verso}</p>
                 <span className="flashcard-hint flashcard-hint-center">
-                  <span aria-hidden="true">↻</span> Clique para voltar
+                  <RotateCw size={14} aria-hidden="true" /> Clique para voltar
                 </span>
               </div>
             </div>
@@ -152,33 +164,43 @@ function FlashcardsPage() {
           <div className="quiz-actions">
             <button
               type="button"
-              className="secondary-button small quiz-nav"
+              className="secondary-button small quiz-nav button-with-spinner"
               onClick={() => irPara(-1)}
               disabled={indice === 0}
             >
-              ← Anterior
+              <ArrowLeft size={14} />
+              <span>Anterior</span>
             </button>
 
             <button
               type="button"
-              className={cardAtual.revisado_em ? 'secondary-button' : 'primary-button'}
+              className={`${cardAtual.revisado_em ? 'secondary-button' : 'primary-button'} button-with-spinner`}
               onClick={alternarRevisado}
               disabled={isToggling}
             >
-              {isToggling
-                ? 'Salvando...'
-                : cardAtual.revisado_em
-                  ? 'Desmarcar revisado'
-                  : 'Marcar como revisado'}
+              {isToggling ? (
+                <span>Salvando...</span>
+              ) : cardAtual.revisado_em ? (
+                <>
+                  <BookmarkMinus size={16} />
+                  <span>Desmarcar revisado</span>
+                </>
+              ) : (
+                <>
+                  <BookmarkCheck size={16} />
+                  <span>Marcar como revisado</span>
+                </>
+              )}
             </button>
 
             <button
               type="button"
-              className="secondary-button small quiz-nav"
+              className="secondary-button small quiz-nav button-with-spinner"
               onClick={() => irPara(1)}
               disabled={indice === flashcards.length - 1}
             >
-              Próximo →
+              <span>Próximo</span>
+              <ArrowRight size={14} />
             </button>
           </div>
 

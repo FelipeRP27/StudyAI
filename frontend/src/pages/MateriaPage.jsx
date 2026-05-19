@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, ChevronRight, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -183,7 +184,9 @@ function MateriaPage() {
           <>
             <div>
               <p className="eyebrow">
-                <Link to="/dashboard">← Matérias</Link>
+                <Link to="/dashboard" className="back-link">
+                  <ArrowLeft size={14} /> Matérias
+                </Link>
               </p>
               <h1>{materia?.nome || 'Carregando matéria...'}</h1>
               <p className="dashboard-copy">
@@ -196,19 +199,21 @@ function MateriaPage() {
               <div className="hero-actions">
                 <button
                   type="button"
-                  className="secondary-button small"
+                  className="secondary-button small button-with-spinner"
                   onClick={handleStartEdit}
                   disabled={isDeleting}
                 >
-                  Editar
+                  <Pencil size={14} />
+                  <span>Editar</span>
                 </button>
                 <button
                   type="button"
-                  className="secondary-button small danger"
+                  className="secondary-button small danger button-with-spinner"
                   onClick={handleDelete}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? 'Excluindo...' : 'Excluir'}
+                  <Trash2 size={14} />
+                  <span>{isDeleting ? 'Excluindo...' : 'Excluir'}</span>
                 </button>
               </div>
             ) : null}
@@ -251,8 +256,15 @@ function MateriaPage() {
               </small>
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
-            <button type="submit" className="primary-button" disabled={isCreating}>
-              {isCreating ? 'Salvando...' : 'Criar conteúdo'}
+            <button type="submit" className="primary-button button-with-spinner" disabled={isCreating}>
+              {isCreating ? (
+                <span>Salvando...</span>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  <span>Criar conteúdo</span>
+                </>
+              )}
             </button>
           </form>
         </article>
@@ -262,7 +274,14 @@ function MateriaPage() {
           {isLoading ? <p>Carregando conteúdos...</p> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && conteudos.length === 0 ? (
-            <p className="muted">Nenhum conteúdo cadastrado ainda nesta matéria.</p>
+            <div className="empty-state">
+              <FileText size={36} className="empty-state-svg" aria-hidden="true" />
+              <strong>Nenhum conteúdo nesta matéria ainda</strong>
+              <p className="muted">
+                Adicione um texto teórico usando o formulário ao lado para a IA gerar resumo,
+                pontos-chave, questões e flashcards.
+              </p>
+            </div>
           ) : null}
           {!isLoading && conteudos.length > 0 ? (
             <ul className="matter-list">
@@ -277,7 +296,7 @@ function MateriaPage() {
                           : conteudo.texto}
                       </span>
                     </div>
-                    <span className="matter-item-arrow" aria-hidden="true">›</span>
+                    <ChevronRight size={18} className="matter-item-arrow" aria-hidden="true" />
                   </Link>
                 </li>
               ))}

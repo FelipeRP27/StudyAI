@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { BarChart3, ChevronDown, ListTodo, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const LINKS = [
-  { to: '/dashboard', label: 'Dashboard', match: ['/dashboard', '/materias'] },
-  { to: '/tarefas', label: 'Tarefas' },
-  { to: '/desempenho', label: 'Desempenho' }
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/tarefas', label: 'Tarefas', icon: ListTodo },
+  { to: '/desempenho', label: 'Desempenho', icon: BarChart3 }
 ];
 
 function TopBar() {
@@ -41,15 +42,19 @@ function TopBar() {
       </NavLink>
 
       <nav className="topbar-nav" aria-label="Navegação principal">
-        {LINKS.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}
-          >
-            {link.label}
-          </NavLink>
-        ))}
+        {LINKS.map((link) => {
+          const Icon = link.icon;
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}
+            >
+              <Icon size={16} strokeWidth={2.2} />
+              <span>{link.label}</span>
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div className="topbar-profile" ref={menuRef}>
@@ -64,9 +69,7 @@ function TopBar() {
             {inicial}
           </span>
           <span className="topbar-profile-name">{primeiroNome}</span>
-          <span className="topbar-caret" aria-hidden="true">
-            ▾
-          </span>
+          <ChevronDown size={14} className="topbar-caret" aria-hidden="true" />
         </button>
         {menuOpen ? (
           <div className="topbar-menu" role="menu">
@@ -80,7 +83,8 @@ function TopBar() {
               onClick={handleLogout}
               role="menuitem"
             >
-              Sair
+              <LogOut size={16} />
+              <span>Sair</span>
             </button>
           </div>
         ) : null}

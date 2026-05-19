@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { UserPlus } from 'lucide-react';
 import AuthShell from '../shared/AuthShell';
 import Spinner from '../shared/Spinner';
 import PasswordInput from '../shared/PasswordInput';
@@ -136,7 +137,10 @@ function RegisterPage() {
               <span>Cadastrando...</span>
             </>
           ) : (
-            <span>Cadastrar</span>
+            <>
+              <UserPlus size={16} />
+              <span>Cadastrar</span>
+            </>
           )}
         </button>
       </form>

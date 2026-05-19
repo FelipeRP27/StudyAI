@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 
 function PasswordInput({
   name,
@@ -29,7 +30,7 @@ function PasswordInput({
         onClick={() => setVisivel((v) => !v)}
         aria-label={visivel ? 'Ocultar senha' : 'Mostrar senha'}
       >
-        {visivel ? 'Ocultar' : 'Mostrar'}
+        {visivel ? <EyeOff size={18} /> : <Eye size={18} />}
       </button>
     </div>
   );
