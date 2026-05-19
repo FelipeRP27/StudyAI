@@ -123,11 +123,11 @@ function FlashcardsPage() {
         </section>
       ) : (
         <section className="content-card">
-          <header className="quiz-header">
+          <header className="quiz-header quiz-header-strong">
             <span>
-              Flashcard {indice + 1} de {flashcards.length}
+              Flashcard <strong>{indice + 1}</strong> de {flashcards.length}
             </span>
-            <span className="quiz-score">
+            <span className="quiz-score success">
               {totalRevisados} revisados de {flashcards.length}
             </span>
           </header>
@@ -138,6 +138,19 @@ function FlashcardsPage() {
               style={{ width: `${(totalRevisados / flashcards.length) * 100}%` }}
             />
           </div>
+
+          {flashcards.length <= 15 ? (
+            <div className="deck-dots" aria-hidden="true">
+              {flashcards.map((card, idx) => (
+                <span
+                  key={card.id}
+                  className={`deck-dot ${idx === indice ? 'current' : ''} ${
+                    card.revisado_em ? 'reviewed' : ''
+                  }`}
+                />
+              ))}
+            </div>
+          ) : null}
 
           {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
