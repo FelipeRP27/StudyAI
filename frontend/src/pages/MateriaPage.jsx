@@ -145,7 +145,7 @@ function MateriaPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
+      <section className="dashboard-hero dashboard-hero-tinted">
         {isEditing ? (
           <form className="form materia-edit-form" onSubmit={handleSaveEdit}>
             <p className="eyebrow">Editando matéria</p>
@@ -187,7 +187,7 @@ function MateriaPage() {
           </form>
         ) : (
           <>
-            <div>
+            <div className="dashboard-hero-content">
               <p className="eyebrow">
                 <Link to="/dashboard" className="back-link">
                   <ArrowLeft size={14} /> Matérias
@@ -233,15 +233,15 @@ function MateriaPage() {
               <BarChart3 size={22} />
             </div>
             <div>
-              <span className="eyebrow">Seu desempenho nesta matéria</span>
+              <h3 className="materia-desempenho-title">Seu desempenho nesta matéria</h3>
               <div className="materia-desempenho-chips">
-                <span className="stat-chip">
+                <span className="stat-chip neutral">
                   <strong>{desempenho.resumo.total_respostas}</strong> respostas
                 </span>
-                <span className="stat-chip">
+                <span className="stat-chip success">
                   <strong>{desempenho.resumo.total_acertos}</strong> acertos
                 </span>
-                <span className="stat-chip primary">
+                <span className="stat-chip">
                   <strong>{desempenho.resumo.taxa_acerto}%</strong> de acerto
                 </span>
               </div>
@@ -259,7 +259,12 @@ function MateriaPage() {
 
       <section className="content-grid">
         <article className="content-card">
-          <h2>Novo conteúdo</h2>
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <Plus size={18} />
+            </span>
+            Novo conteúdo
+          </h2>
           <p className="muted">
             Cole o texto teórico (resumo de aula, capítulo de apostila, lei seca) e o StudyAI vai
             transformar em resumo, pontos-chave, questões e flashcards.
@@ -306,7 +311,12 @@ function MateriaPage() {
         </article>
 
         <article className="content-card">
-          <h2>Conteúdos cadastrados</h2>
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <FileText size={18} />
+            </span>
+            Conteúdos cadastrados
+          </h2>
           {isLoading ? <SkeletonList items={3} /> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && conteudos.length === 0 ? (

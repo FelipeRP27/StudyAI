@@ -169,7 +169,7 @@ function FlashcardsView({ flashcards, conteudoId }) {
             key={card.id}
             className={`flashcard ${card.revisado_em ? 'reviewed' : ''}`}
           >
-            <span className="flashcard-label">Pergunta</span>
+            <span className="flashcard-pill">Pergunta</span>
             <p>{card.frente}</p>
             <span className="flashcard-hint">
               {card.revisado_em ? 'Revisado' : 'Aguardando revisão'}
@@ -323,20 +323,28 @@ function ConteudoPage() {
         <p className="feedback error">{errorMessage}</p>
       ) : (
         <>
-          <section className="content-card">
-            <h2>Texto original</h2>
+          <section className="content-card conteudo-texto-card">
+            <h2 className="card-heading">
+              <span className="card-heading-icon" aria-hidden="true">
+                <FileText size={18} />
+              </span>
+              Texto original
+            </h2>
             <p className="conteudo-texto">{conteudo?.texto}</p>
           </section>
 
           <section className="content-card generator-card">
             <div className="generator-header generator-centered">
+              <div className="generator-icon" aria-hidden="true">
+                <Sparkles size={28} />
+              </div>
               <h2>Gerar material de estudo com IA</h2>
               <p className="muted">
                 Dispara resumo, pontos-chave, questões e flashcards em uma única ação.
               </p>
               <button
                 type="button"
-                className="primary-button button-with-spinner"
+                className={`primary-button button-with-spinner ${isGerando ? '' : 'pulse-cta'}`}
                 onClick={handleGerarEstudo}
                 disabled={isGerando}
               >
@@ -404,19 +412,31 @@ function ConteudoPage() {
 
           {processamentos.length > 0 ? (
             <section className="content-card">
-              <h2>Histórico de processamento</h2>
-              <ul className="history-list">
+              <h2 className="card-heading">
+                <span className="card-heading-icon" aria-hidden="true">
+                  <Sparkles size={18} />
+                </span>
+                Histórico de processamento
+              </h2>
+              <ol className="timeline">
                 {processamentos.slice(0, 10).map((proc) => (
-                  <li key={proc.id} className={`history-item ${proc.status}`}>
-                    <span className="history-tipo">{TIPO_LABEL[proc.tipo] || proc.tipo}</span>
-                    <StatusBadge status={proc.status} />
-                    <span className="history-data">
-                      {new Date(proc.iniciado_em).toLocaleString('pt-BR')}
-                    </span>
-                    {proc.erro ? <span className="history-erro">{proc.erro}</span> : null}
+                  <li key={proc.id} className={`timeline-item timeline-${proc.status}`}>
+                    <span className="timeline-dot" aria-hidden="true" />
+                    <div className="timeline-content">
+                      <div className="timeline-row">
+                        <span className="timeline-tipo">
+                          {TIPO_LABEL[proc.tipo] || proc.tipo}
+                        </span>
+                        <StatusBadge status={proc.status} />
+                      </div>
+                      <span className="timeline-data">
+                        {new Date(proc.iniciado_em).toLocaleString('pt-BR')}
+                      </span>
+                      {proc.erro ? <span className="timeline-erro">{proc.erro}</span> : null}
+                    </div>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </section>
           ) : null}
         </>
