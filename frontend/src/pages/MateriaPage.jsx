@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BarChart3, ChevronRight, FileText, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BarChart3, ChevronRight, FileText, Paperclip, Pencil, Plus, Trash2 } from 'lucide-react';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { SkeletonList } from '../shared/Skeleton';
+import Spinner from '../shared/Spinner';
+import {
+  extractTextFromFile,
+  stripExtension,
+  MAX_FILE_BYTES
+} from '../shared/extractTextFromFile';
 
 function MateriaPage() {
   const { materiaId } = useParams();
@@ -21,6 +27,10 @@ function MateriaPage() {
   const [formData, setFormData] = useState({ titulo: '', texto: '' });
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+
+  const fileInputRef = useRef(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractInfo, setExtractInfo] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ nome: '', descricao: '' });
@@ -62,6 +72,37 @@ function MateriaPage() {
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handlePickFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setCreateError('');
+    setExtractInfo(null);
+    setIsExtracting(true);
+
+    try {
+      const { texto, truncado, caracteres } = await extractTextFromFile(file);
+      setFormData((current) => ({
+        titulo: current.titulo || stripExtension(file.name),
+        texto
+      }));
+      setExtractInfo({
+        nome: file.name,
+        caracteres,
+        truncado
+      });
+    } catch (error) {
+      setCreateError(error.message);
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const handleCreate = async (event) => {
@@ -282,19 +323,58 @@ function MateriaPage() {
               />
             </label>
             <label className="field">
-              <span>Texto</span>
+              <span className="field-label-row">
+                <span>Texto</span>
+                <button
+                  type="button"
+                  className="attach-button"
+                  onClick={handlePickFile}
+                  disabled={isExtracting || isCreating}
+                  aria-label="Anexar PDF ou TXT"
+                >
+                  {isExtracting ? (
+                    <>
+                      <Spinner size={14} label="Extraindo" />
+                      <span>Extraindo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Paperclip size={14} />
+                      <span>Anexar PDF ou TXT</span>
+                    </>
+                  )}
+                </button>
+              </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,application/pdf,text/plain"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
               <textarea
                 name="texto"
                 rows={8}
-                placeholder="Cole aqui o conteúdo teórico"
+                placeholder="Cole aqui o conteúdo teórico ou anexe um PDF/TXT"
                 value={formData.texto}
                 onChange={handleInputChange}
                 required
               />
-              <small className="field-help">
-                Recomendado: pelo menos 500 caracteres para a IA gerar bom material
-                (resumo, pontos-chave, questões e flashcards). Mínimo aceito: 20 caracteres.
-              </small>
+              {extractInfo ? (
+                <small
+                  className={`field-help ${extractInfo.truncado ? 'warn' : 'success-text'}`}
+                >
+                  {extractInfo.truncado
+                    ? `Texto extraído de "${extractInfo.nome}" e truncado em ${extractInfo.caracteres.toLocaleString('pt-BR')} caracteres (limite do sistema).`
+                    : `Texto extraído de "${extractInfo.nome}" (${extractInfo.caracteres.toLocaleString('pt-BR')} caracteres).`}
+                </small>
+              ) : (
+                <small className="field-help">
+                  Recomendado: pelo menos 500 caracteres para a IA gerar bom material
+                  (resumo, pontos-chave, questões e flashcards). Mínimo aceito: 20 caracteres.
+                  Máximo de {(MAX_FILE_BYTES / 1024 / 1024).toFixed(0)} MB por arquivo anexado.
+                </small>
+              )}
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
             <button type="submit" className="primary-button button-with-spinner" disabled={isCreating}>
