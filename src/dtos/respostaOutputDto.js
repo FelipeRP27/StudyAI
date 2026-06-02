@@ -8,7 +8,7 @@ function toRespostaItemDto(resposta) {
   };
 }
 
-function toRespostaResponseDto({ resposta, alternativaCorreta }) {
+function toRespostaResponseDto({ resposta, alternativaCorreta, alternativaEscolhida }) {
   return {
     resposta: toRespostaItemDto(resposta),
     feedback: {
@@ -19,7 +19,15 @@ function toRespostaResponseDto({ resposta, alternativaCorreta }) {
       alternativa_correta: alternativaCorreta
         ? {
             id: alternativaCorreta.id,
-            texto: alternativaCorreta.texto
+            texto: alternativaCorreta.texto,
+            justificativa: alternativaCorreta.justificativa ?? null
+          }
+        : null,
+      alternativa_escolhida: alternativaEscolhida
+        ? {
+            id: alternativaEscolhida.id,
+            texto: alternativaEscolhida.texto,
+            justificativa: alternativaEscolhida.justificativa ?? null
           }
         : null
     }

@@ -202,12 +202,39 @@ function QuestoesPage() {
             </ul>
 
             {feedbackAtual ? (
-              <div
-                className={`feedback ${feedbackAtual.acertou ? 'success' : 'error'}`}
-                role="status"
-              >
-                {feedbackAtual.mensagem}
-              </div>
+              <>
+                <div
+                  className={`feedback ${feedbackAtual.acertou ? 'success' : 'error'}`}
+                  role="status"
+                >
+                  {feedbackAtual.mensagem}
+                </div>
+
+                {!feedbackAtual.acertou && feedbackAtual.alternativa_escolhida?.justificativa ? (
+                  <div className="justificativa-card justificativa-erro">
+                    <span className="justificativa-label">Por que essa alternativa está errada</span>
+                    <p>{feedbackAtual.alternativa_escolhida.justificativa}</p>
+                  </div>
+                ) : null}
+
+                {feedbackAtual.alternativa_correta?.justificativa ? (
+                  <div className="justificativa-card justificativa-correta">
+                    <span className="justificativa-label">
+                      {feedbackAtual.acertou
+                        ? 'Por que sua resposta está correta'
+                        : 'Por que a alternativa correta é a certa'}
+                    </span>
+                    <p>{feedbackAtual.alternativa_correta.justificativa}</p>
+                  </div>
+                ) : null}
+
+                {!feedbackAtual.alternativa_escolhida?.justificativa &&
+                !feedbackAtual.alternativa_correta?.justificativa ? (
+                  <p className="muted justificativa-empty">
+                    Sem explicação detalhada para esta questão.
+                  </p>
+                ) : null}
+              </>
             ) : null}
 
             <div className="quiz-actions">

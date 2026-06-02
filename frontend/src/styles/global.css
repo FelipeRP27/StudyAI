@@ -1954,6 +1954,59 @@ input {
   align-items: flex-start;
 }
 
+.justificativa-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--color-border-strong);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeInUp 0.25s ease-out both;
+}
+
+.justificativa-card p {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.justificativa-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.justificativa-erro {
+  border-color: var(--color-danger-border);
+  border-left-color: var(--color-danger-strong);
+  background: var(--color-danger-bg);
+}
+
+.justificativa-erro .justificativa-label {
+  color: var(--color-danger);
+}
+
+.justificativa-correta {
+  border-color: var(--color-success-border);
+  border-left-color: var(--color-success-soft);
+  background: var(--color-success-bg);
+}
+
+.justificativa-correta .justificativa-label {
+  color: var(--color-success);
+}
+
+.justificativa-empty {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
 .quiz-summary {
   text-align: center;
   display: flex;

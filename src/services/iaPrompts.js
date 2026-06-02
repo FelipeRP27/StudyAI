@@ -32,7 +32,11 @@ const questoesPrompt = (conteudo, quantidade = 5) => ({
   prompt:
     `Gere ${quantidade} questoes de multipla escolha sobre o conteudo abaixo, estilo concurso publico. ` +
     'Cada questao deve ter exatamente 4 alternativas, com APENAS UMA correta. ' +
-    'As alternativas incorretas devem ser plausiveis, nao absurdas.\n\n' +
+    'As alternativas incorretas devem ser plausiveis, nao absurdas. ' +
+    'IMPORTANTE: para CADA alternativa (correta ou errada), inclua tambem o campo "justificativa": ' +
+    'na alternativa correta, explique por que ela esta certa; nas alternativas erradas, explique especificamente ' +
+    'qual o erro de cada uma (conceito confundido, dado incorreto, exceção mal aplicada, etc). ' +
+    'A justificativa deve ter de 1 a 3 frases, em portugues do Brasil, conectada ao conteudo fornecido.\n\n' +
     `${buildConteudoContext(conteudo)}\n\n` +
     'Retorne exclusivamente este JSON:\n' +
     '{\n' +
@@ -40,10 +44,10 @@ const questoesPrompt = (conteudo, quantidade = 5) => ({
     '    {\n' +
     '      "enunciado": "<texto da questao>",\n' +
     '      "alternativas": [\n' +
-    '        { "texto": "<alternativa A>", "is_correta": false },\n' +
-    '        { "texto": "<alternativa B>", "is_correta": true },\n' +
-    '        { "texto": "<alternativa C>", "is_correta": false },\n' +
-    '        { "texto": "<alternativa D>", "is_correta": false }\n' +
+    '        { "texto": "<alternativa A>", "is_correta": false, "justificativa": "<por que A esta errada>" },\n' +
+    '        { "texto": "<alternativa B>", "is_correta": true, "justificativa": "<por que B esta correta>" },\n' +
+    '        { "texto": "<alternativa C>", "is_correta": false, "justificativa": "<por que C esta errada>" },\n' +
+    '        { "texto": "<alternativa D>", "is_correta": false, "justificativa": "<por que D esta errada>" }\n' +
     '      ]\n' +
     '    }\n' +
     '  ]\n' +

@@ -60,7 +60,11 @@ function validateQuestoesPayload(payload) {
         .filter((alt) => alt && typeof alt.texto === 'string' && alt.texto.trim())
         .map((alt) => ({
           texto: alt.texto.trim(),
-          is_correta: Boolean(alt.is_correta)
+          is_correta: Boolean(alt.is_correta),
+          justificativa:
+            typeof alt.justificativa === 'string' && alt.justificativa.trim()
+              ? alt.justificativa.trim()
+              : null
         }));
 
       const corretas = alternativas.filter((alt) => alt.is_correta).length;
@@ -101,7 +105,8 @@ async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 5 }) {
       const createdAlternativa = await questaoRepository.createAlternativa({
         questaoId: questao.id,
         texto: alternativa.texto,
-        isCorreta: alternativa.is_correta
+        isCorreta: alternativa.is_correta,
+        justificativa: alternativa.justificativa ?? null
       });
       alternativas.push(createdAlternativa);
     }

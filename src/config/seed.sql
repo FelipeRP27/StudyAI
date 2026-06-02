@@ -66,15 +66,23 @@ INSERT INTO questoes (id, conteudo_id, enunciado) VALUES
   (3002, 2003, 'A imunidade tributaria recipoca alcanca qual tipo de tributo?')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO alternativas (questao_id, texto, is_correta) VALUES
-  (3001, 'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiencia', TRUE),
-  (3001, 'Legalidade, Igualdade, Mobilidade, Probidade e Economicidade', FALSE),
-  (3001, 'Legalidade, Independencia, Mediacao, Publicidade e Economicidade', FALSE),
-  (3001, 'Liberdade, Imparcialidade, Moralidade, Publicidade e Eficiencia', FALSE),
-  (3002, 'Impostos', TRUE),
-  (3002, 'Taxas', FALSE),
-  (3002, 'Contribuicoes de melhoria', FALSE),
-  (3002, 'Emprestimos compulsorios', FALSE);
+INSERT INTO alternativas (questao_id, texto, is_correta, justificativa) VALUES
+  (3001, 'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiencia', TRUE,
+    'Esses sao exatamente os cinco principios expressos no caput do art. 37 da CF/88, conhecidos pela sigla LIMPE.'),
+  (3001, 'Legalidade, Igualdade, Mobilidade, Probidade e Economicidade', FALSE,
+    'Confunde principios proximos: o correto e Impessoalidade (nao Igualdade), e nao existem "Mobilidade" nem "Economicidade" como principios expressos do art. 37.'),
+  (3001, 'Legalidade, Independencia, Mediacao, Publicidade e Economicidade', FALSE,
+    'Independencia e principio do art. 2 da CF (separacao dos poderes), nao do art. 37; Mediacao e Economicidade tambem nao integram os principios expressos da Administracao Publica.'),
+  (3001, 'Liberdade, Imparcialidade, Moralidade, Publicidade e Eficiencia', FALSE,
+    'O principio correto e Legalidade (nao Liberdade) e Impessoalidade (nao Imparcialidade). Os outros tres estao certos, mas a alternativa erra nos dois primeiros.'),
+  (3002, 'Impostos', TRUE,
+    'O art. 150, VI da CF veda a Uniao, Estados, DF e Municipios "instituir impostos" sobre os entes federativos, templos, partidos, etc. A imunidade reciproca alcanca somente impostos.'),
+  (3002, 'Taxas', FALSE,
+    'Taxas tem fato gerador em servico publico especifico ou exercicio do poder de policia; nao sao alcancadas pela imunidade reciproca, que se limita a impostos (art. 150, VI, "a" da CF).'),
+  (3002, 'Contribuicoes de melhoria', FALSE,
+    'Contribuicao de melhoria decorre de obra publica que valoriza imovel; tambem nao e alcancada pela imunidade reciproca, restrita aos impostos.'),
+  (3002, 'Emprestimos compulsorios', FALSE,
+    'Emprestimos compulsorios sao tributos instituidos pela Uniao em situacoes excepcionais (art. 148 CF) e nao se enquadram na imunidade reciproca, que cobre apenas impostos.');
 
 INSERT INTO flashcards (conteudo_id, frente, verso) VALUES
   (2001, 'O que significa LIMPE?', 'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiencia'),

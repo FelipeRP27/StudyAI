@@ -4,6 +4,7 @@ function toAlternativaResponseDto(alternativa) {
     questao_id: alternativa.questao_id,
     texto: alternativa.texto,
     is_correta: alternativa.is_correta,
+    justificativa: alternativa.justificativa ?? null,
     created_at: alternativa.created_at
   };
 }
