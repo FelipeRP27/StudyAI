@@ -105,9 +105,21 @@ function MateriaPage() {
     }
   };
 
+  const handleRemoveAttachment = () => {
+    setExtractInfo(null);
+    setFormData((current) => ({ ...current, texto: '' }));
+    setCreateError('');
+  };
+
   const handleCreate = async (event) => {
     event.preventDefault();
     setCreateError('');
+
+    if (!formData.texto.trim()) {
+      setCreateError('Adicione o conteúdo: anexe um arquivo ou cole o texto.');
+      return;
+    }
+
     setIsCreating(true);
 
     try {
@@ -117,6 +129,7 @@ function MateriaPage() {
         materia_id: Number(materiaId)
       });
       setFormData({ titulo: '', texto: '' });
+      setExtractInfo(null);
       await loadData();
     } catch (error) {
       setCreateError(error.message);
@@ -352,29 +365,43 @@ function MateriaPage() {
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
-              <textarea
-                name="texto"
-                rows={8}
-                placeholder="Cole aqui o conteúdo teórico ou anexe um PDF/TXT"
-                value={formData.texto}
-                onChange={handleInputChange}
-                required
-              />
               {extractInfo ? (
-                <small
-                  className={`field-help ${extractInfo.truncado ? 'warn' : 'success-text'}`}
-                >
-                  {extractInfo.truncado
-                    ? `Texto extraído de "${extractInfo.nome}" e truncado em ${extractInfo.caracteres.toLocaleString('pt-BR')} caracteres (limite do sistema).`
-                    : `Texto extraído de "${extractInfo.nome}" (${extractInfo.caracteres.toLocaleString('pt-BR')} caracteres).`}
-                </small>
+                <div className={`attachment-chip ${extractInfo.truncado ? 'warn' : ''}`}>
+                  <Paperclip size={18} className="attachment-chip-icon" aria-hidden="true" />
+                  <div className="attachment-chip-info">
+                    <strong>{extractInfo.nome}</strong>
+                    <span>
+                      {extractInfo.caracteres.toLocaleString('pt-BR')} caracteres
+                      {extractInfo.truncado ? ' • truncado no limite de 50.000' : ''}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="attachment-chip-remove"
+                    onClick={handleRemoveAttachment}
+                    disabled={isCreating}
+                    aria-label="Remover anexo"
+                  >
+                    <Trash2 size={14} />
+                    <span>Remover</span>
+                  </button>
+                </div>
               ) : (
+                <textarea
+                  name="texto"
+                  rows={8}
+                  placeholder="Cole aqui o conteúdo teórico ou anexe um PDF/TXT"
+                  value={formData.texto}
+                  onChange={handleInputChange}
+                />
+              )}
+              {!extractInfo ? (
                 <small className="field-help">
                   Recomendado: pelo menos 500 caracteres para a IA gerar bom material
                   (resumo, pontos-chave, questões e flashcards). Mínimo aceito: 20 caracteres.
                   Máximo de {(MAX_FILE_BYTES / 1024 / 1024).toFixed(0)} MB por arquivo anexado.
                 </small>
-              )}
+              ) : null}
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
             <button type="submit" className="primary-button button-with-spinner" disabled={isCreating}>
