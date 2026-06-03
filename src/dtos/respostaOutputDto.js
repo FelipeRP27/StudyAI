@@ -8,18 +8,26 @@ function toRespostaItemDto(resposta) {
   };
 }
 
-function toRespostaResponseDto({ resposta, alternativaCorreta }) {
+function toRespostaResponseDto({ resposta, alternativaCorreta, alternativaEscolhida }) {
   return {
     resposta: toRespostaItemDto(resposta),
     feedback: {
       acertou: resposta.is_correta,
       mensagem: resposta.is_correta
         ? 'Resposta correta!'
-        : 'Resposta incorreta. Confira a alternativa correta abaixo.',
+        : 'Resposta incorreta. A alternativa correta está destacada em verde acima.',
       alternativa_correta: alternativaCorreta
         ? {
             id: alternativaCorreta.id,
-            texto: alternativaCorreta.texto
+            texto: alternativaCorreta.texto,
+            justificativa: alternativaCorreta.justificativa ?? null
+          }
+        : null,
+      alternativa_escolhida: alternativaEscolhida
+        ? {
+            id: alternativaEscolhida.id,
+            texto: alternativaEscolhida.texto,
+            justificativa: alternativaEscolhida.justificativa ?? null
           }
         : null
     }

@@ -108,7 +108,9 @@ frontend/src/
 - Sprint 2 — MVP backend+frontend (auth, CRUD materias/conteudos): concluída
 - Sprint 3 — Integração IA (Gemini, geração de material, histórico, Docker, testes): concluída em `sprint-3` (PR #35)
 - Sprint 4 — Estudo ativo (respostas, desempenho, tarefas, telas dedicadas): concluída em `sprint-4`
-- Sprint 5 — Estabilização (cache IA, validações, erros globais, polimento visual, seed de demo): concluída em `sprint-5`
+- Sprint 5 — Estabilização (cache IA, validações, erros globais, polimento visual, seed de demo): concluída em `sprint-5` (PR #67 mergeada)
+- Pós-sprints — CRUD matéria no frontend + drill-down de desempenho por matéria + anexo PDF/TXT no conteúdo + reforma visual completa (Inter, ícones lucide, skeletons, design tokens slate, hero compacto, timeline): em `feat/ux-improvements` (PR #68)
+- **MVP completo**: 58 testes Jest passando, frontend testado em browser, pronto para apresentação. README com guia limpo para Felipe rodar do zero.
 
 ## O que NÃO fazer
 

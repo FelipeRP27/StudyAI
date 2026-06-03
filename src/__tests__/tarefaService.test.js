@@ -21,13 +21,12 @@ const tarefaOwnershipService = require('../services/tarefaOwnershipService');
 const tarefaService = require('../services/tarefaService');
 const AppError = require('../config/appError');
 
-const HOJE = new Date();
-HOJE.setHours(0, 0, 0, 0);
-
 function isoDateOffset(dias) {
-  const data = new Date(HOJE);
-  data.setDate(data.getDate() + dias);
-  return data.toISOString().slice(0, 10);
+  const agora = new Date();
+  const dataUtc = new Date(
+    Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), agora.getUTCDate() + dias)
+  );
+  return dataUtc.toISOString().slice(0, 10);
 }
 
 describe('tarefaService.create', () => {

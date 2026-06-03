@@ -1,31 +1,64 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, BookOpenCheck, FileText, Layers, Lightbulb, Sparkles } from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
 import { pontoChaveService } from '../services/pontoChaveService';
 import { questaoService } from '../services/questaoService';
 import { flashcardService } from '../services/flashcardService';
 import { processamentoService } from '../services/processamentoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
+import CopyButton from '../shared/CopyButton';
+import Spinner from '../shared/Spinner';
+import Skeleton, { SkeletonText } from '../shared/Skeleton';
+
+const STAGES = ['resumo', 'pontos_chave', 'questoes', 'flashcards'];
+
+const TIPO_LABEL = {
+  resumo: 'Resumo',
+  pontos_chave: 'Pontos-chave',
+  questoes: 'Questões',
+  flashcards: 'Flashcards',
+  completo: 'Completo'
+};
+
+const STATUS_LABEL = {
+  pendente: 'Aguardando',
+  processando: 'Processando',
+  concluido: 'Concluído',
+  erro: 'Erro'
+};
 
 const ABAS = [
-  { id: 'resumo', titulo: 'Resumo' },
-  { id: 'pontos_chave', titulo: 'Pontos-chave' },
-  { id: 'questoes', titulo: 'Questoes' },
-  { id: 'flashcards', titulo: 'Flashcards' }
+  { id: 'resumo', titulo: TIPO_LABEL.resumo },
+  { id: 'pontos_chave', titulo: TIPO_LABEL.pontos_chave },
+  { id: 'questoes', titulo: TIPO_LABEL.questoes },
+  { id: 'flashcards', titulo: TIPO_LABEL.flashcards }
 ];
 
 function StatusBadge({ status }) {
   const classe = `badge badge-${status}`;
-  return <span className={classe}>{status}</span>;
+  return <span className={classe}>{STATUS_LABEL[status] || status}</span>;
 }
 
 function ResumoView({ resumos }) {
   if (!resumos || resumos.length === 0) {
-    return <p className="muted">Nenhum resumo gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <FileText size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Resumo ainda não gerado</strong>
+        <p className="muted">
+          Clique em <strong>Gerar estudo</strong> acima para a IA produzir um resumo deste conteúdo.
+        </p>
+      </div>
+    );
   }
+  const textoCopia = resumos.map((r) => r.texto).join('\n\n');
   return (
     <div className="stack">
+      <div className="tab-toolbar">
+        <CopyButton text={textoCopia} label="Copiar resumo" />
+      </div>
       {resumos.map((resumo) => (
         <article key={resumo.id} className="card-inner">
           <p>{resumo.texto}</p>
@@ -37,39 +70,62 @@ function ResumoView({ resumos }) {
 
 function PontosChaveView({ pontos }) {
   if (!pontos || pontos.length === 0) {
-    return <p className="muted">Nenhum ponto-chave gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <Lightbulb size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Pontos-chave ainda não gerados</strong>
+        <p className="muted">
+          A IA vai extrair os tópicos mais importantes deste conteúdo quando você gerar o estudo.
+        </p>
+      </div>
+    );
   }
+  const textoCopia = pontos.map((p) => `• ${p.texto}`).join('\n');
   return (
-    <ul className="bullet-list">
-      {pontos.map((ponto) => (
-        <li key={ponto.id}>{ponto.texto}</li>
-      ))}
-    </ul>
+    <div className="stack">
+      <div className="tab-toolbar">
+        <CopyButton text={textoCopia} label="Copiar pontos-chave" />
+      </div>
+      <ul className="bullet-list">
+        {pontos.map((ponto) => (
+          <li key={ponto.id}>{ponto.texto}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
 function QuestoesView({ questoes, conteudoId }) {
   if (!questoes || questoes.length === 0) {
-    return <p className="muted">Nenhuma questao gerada ainda.</p>;
+    return (
+      <div className="empty-state">
+        <BookOpenCheck size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Questões ainda não geradas</strong>
+        <p className="muted">
+          Gere o material com IA e venha resolver questões de múltipla escolha com correção
+          automática.
+        </p>
+      </div>
+    );
   }
 
   return (
     <div className="stack">
       <div className="cta-card">
         <div>
-          <strong>{questoes.length} questoes prontas</strong>
+          <strong>{questoes.length} questões prontas</strong>
           <p className="muted">
-            Resolva no modo guiado: uma por vez, com feedback imediato e correcao automatica.
+            Resolva no modo guiado: uma por vez, com feedback imediato e correção automática.
           </p>
         </div>
         <Link to={`/conteudos/${conteudoId}/questoes`} className="primary-button small">
-          Resolver questoes
+          Resolver questões
         </Link>
       </div>
       <ul className="bullet-list">
         {questoes.slice(0, 5).map((questao, idx) => (
           <li key={questao.id}>
-            <strong>Questao {idx + 1}.</strong> {questao.enunciado}
+            <strong>Questão {idx + 1}.</strong> {questao.enunciado}
           </li>
         ))}
       </ul>
@@ -79,7 +135,15 @@ function QuestoesView({ questoes, conteudoId }) {
 
 function FlashcardsView({ flashcards, conteudoId }) {
   if (!flashcards || flashcards.length === 0) {
-    return <p className="muted">Nenhum flashcard gerado ainda.</p>;
+    return (
+      <div className="empty-state">
+        <Layers size={36} className="empty-state-svg" aria-hidden="true" />
+        <strong>Flashcards ainda não gerados</strong>
+        <p className="muted">
+          A IA cria cartões com pergunta e resposta para você revisar no modo guiado.
+        </p>
+      </div>
+    );
   }
 
   const revisados = flashcards.filter((c) => c.revisado_em).length;
@@ -92,7 +156,7 @@ function FlashcardsView({ flashcards, conteudoId }) {
           <p className="muted">
             {revisados > 0
               ? `${revisados} revisado(s). Continue praticando no modo guiado.`
-              : 'Estude no modo guiado: virar carta, marcar revisado e avancar.'}
+              : 'Estude no modo guiado: virar carta, marcar revisado e avançar.'}
           </p>
         </div>
         <Link to={`/conteudos/${conteudoId}/flashcards`} className="primary-button small">
@@ -105,10 +169,10 @@ function FlashcardsView({ flashcards, conteudoId }) {
             key={card.id}
             className={`flashcard ${card.revisado_em ? 'reviewed' : ''}`}
           >
-            <span className="flashcard-label">Pergunta</span>
+            <span className="flashcard-pill">Pergunta</span>
             <p>{card.frente}</p>
             <span className="flashcard-hint">
-              {card.revisado_em ? 'Revisado' : 'Aguardando revisao'}
+              {card.revisado_em ? 'Revisado' : 'Aguardando revisão'}
             </span>
           </article>
         ))}
@@ -119,10 +183,9 @@ function FlashcardsView({ flashcards, conteudoId }) {
 
 function ConteudoPage() {
   const { conteudoId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
+  useDocumentTitle(conteudo?.titulo || 'Conteúdo');
   const [resumos, setResumos] = useState([]);
   const [pontosChave, setPontosChave] = useState([]);
   const [questoes, setQuestoes] = useState([]);
@@ -134,9 +197,17 @@ function ConteudoPage() {
 
   const [isGerando, setIsGerando] = useState(false);
   const [gerarError, setGerarError] = useState('');
-  const [gerarResumo, setGerarResumo] = useState(null);
+  const [etapasStatus, setEtapasStatus] = useState({});
 
   const [abaAtiva, setAbaAtiva] = useState('resumo');
+
+  const timersRef = useRef([]);
+  const clearTimers = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  };
+
+  useEffect(() => () => clearTimers(), []);
 
   const carregarMateriais = useCallback(async () => {
     const [conteudoData, resumosData, pontosData, questoesData, flashData, processData] =
@@ -180,22 +251,32 @@ function ConteudoPage() {
   const handleGerarEstudo = async () => {
     setIsGerando(true);
     setGerarError('');
-    setGerarResumo(null);
+    clearTimers();
+    setEtapasStatus(Object.fromEntries(STAGES.map((s) => [s, 'processando'])));
+
+    timersRef.current = STAGES.slice(0, -1).map((stage, i) =>
+      setTimeout(() => {
+        setEtapasStatus((prev) => ({ ...prev, [stage]: 'concluido' }));
+      }, (i + 1) * 7000)
+    );
 
     try {
       const resposta = await processamentoService.processarConteudo(conteudoId);
-      setGerarResumo(resposta);
+      const reais = {};
+      (resposta.tipos_executados || STAGES).forEach((t) => {
+        reais[t] = resposta.resultados?.[t]?.status || 'concluido';
+      });
+      setEtapasStatus(reais);
       await carregarMateriais();
     } catch (error) {
       setGerarError(error.message);
+      setEtapasStatus((prev) =>
+        Object.fromEntries(STAGES.map((s) => [s, prev[s] === 'processando' ? 'erro' : prev[s]]))
+      );
     } finally {
+      clearTimers();
       setIsGerando(false);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   const contagens = useMemo(
@@ -208,67 +289,93 @@ function ConteudoPage() {
     [resumos, pontosChave, questoes, flashcards]
   );
 
+  const temProgresso = isGerando || Object.keys(etapasStatus).length > 0;
+
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
         <div>
           {conteudo ? (
             <p className="eyebrow">
-              <Link to={`/materias/${conteudo.materia_id}`}>← Voltar para materia</Link>
+              <Link to={`/materias/${conteudo.materia_id}`} className="back-link">
+                <ArrowLeft size={14} /> Voltar para matéria
+              </Link>
             </p>
           ) : (
             <p className="eyebrow">
-              <Link to="/dashboard">← Dashboard</Link>
+              <Link to="/dashboard" className="back-link">
+                <ArrowLeft size={14} /> Dashboard
+              </Link>
             </p>
           )}
-          <h1>{conteudo?.titulo || 'Carregando conteudo...'}</h1>
-          <span className="user-chip">{usuario?.nome}</span>
+          <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? (
-        <p>Carregando conteudo...</p>
+        <section className="content-card">
+          <Skeleton width="40%" height="1.4rem" />
+          <div style={{ marginTop: 14 }}>
+            <SkeletonText lines={4} />
+          </div>
+        </section>
       ) : errorMessage ? (
         <p className="feedback error">{errorMessage}</p>
       ) : (
         <>
-          <section className="content-card">
-            <h2>Texto original</h2>
+          <section className="content-card conteudo-texto-card">
+            <h2 className="card-heading">
+              <span className="card-heading-icon" aria-hidden="true">
+                <FileText size={18} />
+              </span>
+              Texto original
+            </h2>
             <p className="conteudo-texto">{conteudo?.texto}</p>
           </section>
 
           <section className="content-card generator-card">
-            <div className="generator-header">
-              <div>
-                <h2>Gerar material de estudo com IA</h2>
-                <p className="muted">
-                  Dispara resumo, pontos-chave, questoes e flashcards em uma unica acao.
-                </p>
+            <div className="generator-header generator-centered">
+              <div className="generator-icon" aria-hidden="true">
+                <Sparkles size={28} />
               </div>
+              <h2>Gerar material de estudo com IA</h2>
+              <p className="muted">
+                Dispara resumo, pontos-chave, questões e flashcards em uma única ação.
+              </p>
               <button
                 type="button"
-                className="primary-button"
+                className={`primary-button button-with-spinner ${isGerando ? '' : 'pulse-cta'}`}
                 onClick={handleGerarEstudo}
                 disabled={isGerando}
               >
-                {isGerando ? 'Gerando com IA...' : 'Gerar estudo'}
+                {isGerando ? (
+                  <>
+                    <Spinner size={16} label="Gerando" />
+                    <span>Gerando com IA...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    <span>Gerar estudo</span>
+                  </>
+                )}
               </button>
             </div>
 
             {gerarError ? <p className="feedback error">{gerarError}</p> : null}
 
-            {gerarResumo ? (
+            {temProgresso ? (
               <div className="gen-summary">
-                {gerarResumo.tipos_executados.map((tipo) => {
-                  const status = gerarResumo.resultados?.[tipo]?.status || 'desconhecido';
+                {STAGES.map((tipo) => {
+                  const status = etapasStatus[tipo] || 'pendente';
                   return (
                     <div key={tipo} className={`gen-summary-item ${status}`}>
-                      <span>{tipo}</span>
-                      <StatusBadge status={status} />
+                      <span>{TIPO_LABEL[tipo]}</span>
+                      {status === 'processando' ? (
+                        <Spinner size={14} label="processando" />
+                      ) : (
+                        <StatusBadge status={status} />
+                      )}
                     </div>
                   );
                 })}
@@ -305,19 +412,31 @@ function ConteudoPage() {
 
           {processamentos.length > 0 ? (
             <section className="content-card">
-              <h2>Historico de processamento</h2>
-              <ul className="history-list">
+              <h2 className="card-heading">
+                <span className="card-heading-icon" aria-hidden="true">
+                  <Sparkles size={18} />
+                </span>
+                Histórico de processamento
+              </h2>
+              <ol className="timeline">
                 {processamentos.slice(0, 10).map((proc) => (
-                  <li key={proc.id} className={`history-item ${proc.status}`}>
-                    <span className="history-tipo">{proc.tipo}</span>
-                    <StatusBadge status={proc.status} />
-                    <span className="history-data">
-                      {new Date(proc.iniciado_em).toLocaleString('pt-BR')}
-                    </span>
-                    {proc.erro ? <span className="history-erro">{proc.erro}</span> : null}
+                  <li key={proc.id} className={`timeline-item timeline-${proc.status}`}>
+                    <span className="timeline-dot" aria-hidden="true" />
+                    <div className="timeline-content">
+                      <div className="timeline-row">
+                        <span className="timeline-tipo">
+                          {TIPO_LABEL[proc.tipo] || proc.tipo}
+                        </span>
+                        <StatusBadge status={proc.status} />
+                      </div>
+                      <span className="timeline-data">
+                        {new Date(proc.iniciado_em).toLocaleString('pt-BR')}
+                      </span>
+                      {proc.erro ? <span className="timeline-erro">{proc.erro}</span> : null}
+                    </div>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </section>
           ) : null}
         </>

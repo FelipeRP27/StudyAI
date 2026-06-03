@@ -3,9 +3,9 @@ function AuthShell({ title, subtitle, children }) {
     <main className="auth-page">
       <section className="auth-panel auth-panel-brand">
         <p className="eyebrow">StudyAI</p>
-        <h1>Assistente inteligente para concursos publicos</h1>
+        <h1>Assistente inteligente para concursos públicos</h1>
         <p>
-          Organize materias, concentre conteudos e prepare a base para estudos ativos em um unico
+          Organize matérias, concentre conteúdos e prepare a base para estudos ativos em um único
           fluxo.
         </p>
       </section>

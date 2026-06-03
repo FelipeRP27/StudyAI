@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -24,10 +25,11 @@ class ErrorBoundary extends React.Component {
 
     return (
       <main className="dashboard-page">
-        <section className="content-card">
+        <section className="content-card empty-state-card">
+          <AlertTriangle size={48} className="empty-state-svg" aria-hidden="true" />
           <h2>Algo deu errado</h2>
           <p className="muted">
-            A pagina encontrou um erro inesperado. Voce pode voltar ao dashboard e tentar
+            A página encontrou um erro inesperado. Você pode voltar ao dashboard e tentar
             novamente.
           </p>
           {this.state.error?.message ? (

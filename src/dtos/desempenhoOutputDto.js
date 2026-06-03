@@ -43,6 +43,30 @@ function toDesempenhoResponseDto({ resumo, porMateria, evolucao }) {
   };
 }
 
+function toDesempenhoPorConteudoDto(rows) {
+  return rows.map((row) => ({
+    conteudo_id: row.conteudo_id,
+    conteudo_titulo: row.conteudo_titulo,
+    total_respostas: row.total_respostas,
+    total_acertos: row.total_acertos,
+    taxa_acerto: calcularTaxa(row.total_acertos, row.total_respostas)
+  }));
+}
+
+function toDesempenhoMateriaResponseDto({ materia, resumo, porConteudo, evolucao }) {
+  return {
+    materia: {
+      id: materia.id,
+      nome: materia.nome,
+      descricao: materia.descricao || null
+    },
+    resumo: toResumoDto(resumo),
+    por_conteudo: toDesempenhoPorConteudoDto(porConteudo),
+    evolucao: toEvolucaoDto(evolucao)
+  };
+}
+
 module.exports = {
-  toDesempenhoResponseDto
+  toDesempenhoResponseDto,
+  toDesempenhoMateriaResponseDto
 };

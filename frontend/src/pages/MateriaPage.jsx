@@ -1,40 +1,63 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { ArrowLeft, ArrowRight, BarChart3, ChevronRight, FileText, Paperclip, Pencil, Plus, Trash2 } from 'lucide-react';
 import { materiaService } from '../services/materiaService';
 import { conteudoService } from '../services/conteudoService';
+import { desempenhoService } from '../services/desempenhoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
+import { SkeletonList } from '../shared/Skeleton';
+import Spinner from '../shared/Spinner';
+import {
+  extractTextFromFile,
+  stripExtension,
+  MAX_FILE_BYTES
+} from '../shared/extractTextFromFile';
 
 function MateriaPage() {
   const { materiaId } = useParams();
   const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [materia, setMateria] = useState(null);
+  useDocumentTitle(materia?.nome || 'Matéria');
   const [conteudos, setConteudos] = useState([]);
+  const [desempenho, setDesempenho] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+
   const [formData, setFormData] = useState({ titulo: '', texto: '' });
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState('');
+
+  const fileInputRef = useRef(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractInfo, setExtractInfo] = useState(null);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ nome: '', descricao: '' });
+  const [editError, setEditError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage('');
 
     try {
-      const [materias, listaConteudos] = await Promise.all([
+      const [materias, listaConteudos, desempenhoData] = await Promise.all([
         materiaService.listMaterias(),
-        conteudoService.listByMateria(materiaId)
+        conteudoService.listByMateria(materiaId),
+        desempenhoService.getByMateria(materiaId, { dias: 30 }).catch(() => null)
       ]);
 
       const materiaAtual = materias.find((item) => String(item.id) === String(materiaId));
       if (!materiaAtual) {
-        setErrorMessage('Materia nao encontrada.');
+        setErrorMessage('Matéria não encontrada.');
         setMateria(null);
       } else {
         setMateria(materiaAtual);
       }
       setConteudos(listaConteudos);
+      setDesempenho(desempenhoData);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -51,9 +74,52 @@ function MateriaPage() {
     setFormData((current) => ({ ...current, [name]: value }));
   };
 
+  const handlePickFile = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setCreateError('');
+    setExtractInfo(null);
+    setIsExtracting(true);
+
+    try {
+      const { texto, truncado, caracteres } = await extractTextFromFile(file);
+      setFormData((current) => ({
+        titulo: current.titulo || stripExtension(file.name),
+        texto
+      }));
+      setExtractInfo({
+        nome: file.name,
+        caracteres,
+        truncado
+      });
+    } catch (error) {
+      setCreateError(error.message);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleRemoveAttachment = () => {
+    setExtractInfo(null);
+    setFormData((current) => ({ ...current, texto: '' }));
+    setCreateError('');
+  };
+
   const handleCreate = async (event) => {
     event.preventDefault();
     setCreateError('');
+
+    if (!formData.texto.trim()) {
+      setCreateError('Adicione o conteúdo: anexe um arquivo ou cole o texto.');
+      return;
+    }
+
     setIsCreating(true);
 
     try {
@@ -63,6 +129,7 @@ function MateriaPage() {
         materia_id: Number(materiaId)
       });
       setFormData({ titulo: '', texto: '' });
+      setExtractInfo(null);
       await loadData();
     } catch (error) {
       setCreateError(error.message);
@@ -71,85 +138,318 @@ function MateriaPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleStartEdit = () => {
+    if (!materia) return;
+    setEditForm({
+      nome: materia.nome || '',
+      descricao: materia.descricao || ''
+    });
+    setEditError('');
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditError('');
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+    setEditForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSaveEdit = async (event) => {
+    event.preventDefault();
+    setEditError('');
+    setIsSaving(true);
+
+    try {
+      const atualizada = await materiaService.update(materiaId, {
+        nome: editForm.nome,
+        descricao: editForm.descricao || null
+      });
+      setMateria(atualizada);
+      setIsEditing(false);
+    } catch (error) {
+      setEditError(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!materia) return;
+    const totalConteudos = conteudos.length;
+    const aviso =
+      totalConteudos > 0
+        ? `Excluir a matéria "${materia.nome}"?\n\nIsso vai apagar permanentemente ${totalConteudos} conteúdo(s) e todo o material gerado por IA (resumos, pontos-chave, questões, alternativas, flashcards e respostas registradas).\n\nTarefas vinculadas a essa matéria não serão excluídas — apenas perderão o vínculo.`
+        : `Excluir a matéria "${materia.nome}"?\n\nEssa ação não pode ser desfeita.`;
+
+    if (!window.confirm(aviso)) return;
+
+    setIsDeleting(true);
+    try {
+      await materiaService.remove(materiaId);
+      navigate('/dashboard');
+    } catch (error) {
+      setErrorMessage(error.message);
+      setIsDeleting(false);
+    }
   };
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/dashboard">← Materias</Link>
-          </p>
-          <h1>{materia?.nome || 'Carregando materia...'}</h1>
-          <p className="dashboard-copy">
-            {materia?.descricao || 'Organize conteudos teoricos e gere material de estudo ativo.'}
-          </p>
-          <span className="user-chip">{usuario?.nome}</span>
-        </div>
+      <section className="dashboard-hero dashboard-hero-tinted">
+        {isEditing ? (
+          <form className="form materia-edit-form" onSubmit={handleSaveEdit}>
+            <p className="eyebrow">Editando matéria</p>
+            <label className="field">
+              <span>Nome</span>
+              <input
+                name="nome"
+                type="text"
+                value={editForm.nome}
+                onChange={handleEditChange}
+                required
+                autoFocus
+              />
+            </label>
+            <label className="field">
+              <span>Descrição</span>
+              <input
+                name="descricao"
+                type="text"
+                value={editForm.descricao}
+                onChange={handleEditChange}
+                placeholder="Opcional"
+              />
+            </label>
+            {editError ? <p className="feedback error">{editError}</p> : null}
+            <div className="form-actions">
+              <button type="submit" className="primary-button" disabled={isSaving}>
+                {isSaving ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={handleCancelEdit}
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <div className="dashboard-hero-content">
+              <p className="eyebrow">
+                <Link to="/dashboard" className="back-link">
+                  <ArrowLeft size={14} /> Matérias
+                </Link>
+              </p>
+              <h1>{materia?.nome || 'Carregando matéria...'}</h1>
+              <p className="dashboard-copy">
+                {materia?.descricao ||
+                  'Organize conteúdos teóricos e gere material de estudo ativo.'}
+              </p>
+            </div>
 
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
+            {materia ? (
+              <div className="hero-actions">
+                <button
+                  type="button"
+                  className="secondary-button small button-with-spinner"
+                  onClick={handleStartEdit}
+                  disabled={isDeleting}
+                >
+                  <Pencil size={14} />
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button small danger button-with-spinner"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  <Trash2 size={14} />
+                  <span>{isDeleting ? 'Excluindo...' : 'Excluir'}</span>
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
       </section>
+
+      {desempenho && desempenho.resumo && desempenho.resumo.total_respostas > 0 ? (
+        <section className="content-card materia-desempenho-card">
+          <div className="materia-desempenho-info">
+            <div className="materia-desempenho-icon" aria-hidden="true">
+              <BarChart3 size={22} />
+            </div>
+            <div>
+              <h3 className="materia-desempenho-title">Seu desempenho nesta matéria</h3>
+              <div className="materia-desempenho-chips">
+                <span className="stat-chip neutral">
+                  <strong>{desempenho.resumo.total_respostas}</strong> respostas
+                </span>
+                <span className="stat-chip success">
+                  <strong>{desempenho.resumo.total_acertos}</strong> acertos
+                </span>
+                <span className="stat-chip">
+                  <strong>{desempenho.resumo.taxa_acerto}%</strong> de acerto
+                </span>
+              </div>
+            </div>
+          </div>
+          <Link
+            to={`/desempenho/materias/${materiaId}`}
+            className="primary-button small button-with-spinner"
+          >
+            <span>Ver detalhes</span>
+            <ArrowRight size={14} />
+          </Link>
+        </section>
+      ) : null}
 
       <section className="content-grid">
         <article className="content-card">
-          <h2>Novo conteudo</h2>
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <Plus size={18} />
+            </span>
+            Novo conteúdo
+          </h2>
           <p className="muted">
-            Cole o texto teorico (resumo de aula, capitulo de apostila, lei seca) e o StudyAI vai
-            transformar em resumo, pontos-chave, questoes e flashcards.
+            Cole o texto teórico (resumo de aula, capítulo de apostila, lei seca) e o StudyAI vai
+            transformar em resumo, pontos-chave, questões e flashcards.
           </p>
           <form className="form" onSubmit={handleCreate}>
             <label className="field">
-              <span>Titulo</span>
+              <span>Título</span>
               <input
                 name="titulo"
                 type="text"
-                placeholder="Ex: Principios da Administracao Publica"
+                placeholder="Ex: Princípios da Administração Pública"
                 value={formData.titulo}
                 onChange={handleInputChange}
                 required
               />
             </label>
             <label className="field">
-              <span>Texto</span>
-              <textarea
-                name="texto"
-                rows={8}
-                placeholder="Cole aqui o conteudo teorico"
-                value={formData.texto}
-                onChange={handleInputChange}
-                required
+              <span className="field-label-row">
+                <span>Texto</span>
+                <button
+                  type="button"
+                  className="attach-button"
+                  onClick={handlePickFile}
+                  disabled={isExtracting || isCreating}
+                  aria-label="Anexar PDF ou TXT"
+                >
+                  {isExtracting ? (
+                    <>
+                      <Spinner size={14} label="Extraindo" />
+                      <span>Extraindo...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Paperclip size={14} />
+                      <span>Anexar PDF ou TXT</span>
+                    </>
+                  )}
+                </button>
+              </span>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.txt,application/pdf,text/plain"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
               />
+              {extractInfo ? (
+                <div className={`attachment-chip ${extractInfo.truncado ? 'warn' : ''}`}>
+                  <Paperclip size={18} className="attachment-chip-icon" aria-hidden="true" />
+                  <div className="attachment-chip-info">
+                    <strong>{extractInfo.nome}</strong>
+                    <span>
+                      {extractInfo.caracteres.toLocaleString('pt-BR')} caracteres
+                      {extractInfo.truncado ? ' • truncado no limite de 50.000' : ''}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="attachment-chip-remove"
+                    onClick={handleRemoveAttachment}
+                    disabled={isCreating}
+                    aria-label="Remover anexo"
+                  >
+                    <Trash2 size={14} />
+                    <span>Remover</span>
+                  </button>
+                </div>
+              ) : (
+                <textarea
+                  name="texto"
+                  rows={8}
+                  placeholder="Cole aqui o conteúdo teórico ou anexe um PDF/TXT"
+                  value={formData.texto}
+                  onChange={handleInputChange}
+                />
+              )}
+              {!extractInfo ? (
+                <small className="field-help">
+                  Recomendado: pelo menos 500 caracteres para a IA gerar bom material
+                  (resumo, pontos-chave, questões e flashcards). Mínimo aceito: 20 caracteres.
+                  Máximo de {(MAX_FILE_BYTES / 1024 / 1024).toFixed(0)} MB por arquivo anexado.
+                </small>
+              ) : null}
             </label>
             {createError ? <p className="feedback error">{createError}</p> : null}
-            <button type="submit" className="primary-button" disabled={isCreating}>
-              {isCreating ? 'Salvando...' : 'Criar conteudo'}
+            <button type="submit" className="primary-button button-with-spinner" disabled={isCreating}>
+              {isCreating ? (
+                <span>Salvando...</span>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  <span>Criar conteúdo</span>
+                </>
+              )}
             </button>
           </form>
         </article>
 
         <article className="content-card">
-          <h2>Conteudos cadastrados</h2>
-          {isLoading ? <p>Carregando conteudos...</p> : null}
+          <h2 className="card-heading">
+            <span className="card-heading-icon" aria-hidden="true">
+              <FileText size={18} />
+            </span>
+            Conteúdos cadastrados
+          </h2>
+          {isLoading ? <SkeletonList items={3} /> : null}
           {!isLoading && errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
           {!isLoading && !errorMessage && conteudos.length === 0 ? (
-            <p className="muted">Nenhum conteudo cadastrado ainda nesta materia.</p>
+            <div className="empty-state">
+              <FileText size={36} className="empty-state-svg" aria-hidden="true" />
+              <strong>Nenhum conteúdo nesta matéria ainda</strong>
+              <p className="muted">
+                Adicione um texto teórico usando o formulário ao lado para a IA gerar resumo,
+                pontos-chave, questões e flashcards.
+              </p>
+            </div>
           ) : null}
           {!isLoading && conteudos.length > 0 ? (
             <ul className="matter-list">
               {conteudos.map((conteudo) => (
                 <li key={conteudo.id} className="matter-item">
                   <Link to={`/conteudos/${conteudo.id}`}>
-                    <strong>{conteudo.titulo}</strong>
-                    <span>
-                      {conteudo.texto.length > 140
-                        ? `${conteudo.texto.slice(0, 140)}...`
-                        : conteudo.texto}
-                    </span>
+                    <div className="matter-item-text">
+                      <strong>{conteudo.titulo}</strong>
+                      <span>
+                        {conteudo.texto.length > 140
+                          ? `${conteudo.texto.slice(0, 140)}...`
+                          : conteudo.texto}
+                      </span>
+                    </div>
+                    <ChevronRight size={18} className="matter-item-arrow" aria-hidden="true" />
                   </Link>
                 </li>
               ))}

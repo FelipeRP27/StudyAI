@@ -34,7 +34,8 @@ async function responder({ questaoId, alternativaId, usuarioId }) {
 
   return toRespostaResponseDto({
     resposta,
-    alternativaCorreta: correta
+    alternativaCorreta: correta,
+    alternativaEscolhida: escolhida
   });
 }
 

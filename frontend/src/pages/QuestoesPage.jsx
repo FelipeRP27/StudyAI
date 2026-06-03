@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight, BookOpenCheck, RotateCcw, Trophy } from 'lucide-react';
+import Skeleton, { SkeletonText } from '../shared/Skeleton';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
+import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { respostaService } from '../services/respostaService';
 
 function QuestoesPage() {
+  useDocumentTitle('Resolver questões');
   const { conteudoId } = useParams();
-  const navigate = useNavigate();
-  const { logout, usuario } = useAuth();
 
   const [conteudo, setConteudo] = useState(null);
   const [questoes, setQuestoes] = useState([]);
@@ -82,9 +83,10 @@ function QuestoesPage() {
     if (indice > 0) setIndice(indice - 1);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const refazer = () => {
+    setEscolhas({});
+    setFeedbacks({});
+    setIndice(0);
   };
 
   return (
@@ -92,35 +94,75 @@ function QuestoesPage() {
       <section className="dashboard-hero">
         <div>
           <p className="eyebrow">
-            <Link to={`/conteudos/${conteudoId}`}>← Voltar ao conteudo</Link>
+            <Link to={`/conteudos/${conteudoId}`} className="back-link">
+              <ArrowLeft size={14} /> Voltar ao conteúdo
+            </Link>
           </p>
-          <h1>Resolver questoes</h1>
+          <h1>Resolver questões</h1>
           <p className="dashboard-copy">
             {conteudo?.titulo || 'Carregando...'}
           </p>
-          <span className="user-chip">{usuario?.nome}</span>
         </div>
-
-        <button type="button" className="secondary-button" onClick={handleLogout}>
-          Sair
-        </button>
       </section>
 
       {isLoading ? (
-        <p>Carregando questoes...</p>
+        <section className="content-card">
+          <Skeleton width="35%" height="1.1rem" />
+          <div style={{ marginTop: 18 }}>
+            <SkeletonText lines={2} />
+          </div>
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+            <Skeleton height="44px" />
+          </div>
+        </section>
       ) : errorMessage && questoes.length === 0 ? (
         <p className="feedback error">{errorMessage}</p>
       ) : questoes.length === 0 ? (
         <section className="content-card">
-          <p className="muted">
-            Nenhuma questao gerada para este conteudo. Volte ao conteudo e gere o material com IA.
+          <div className="empty-state">
+            <BookOpenCheck size={36} className="empty-state-svg" aria-hidden="true" />
+            <strong>Nenhuma questão para resolver</strong>
+            <p className="muted">
+              Volte ao conteúdo e clique em <strong>Gerar estudo</strong> para a IA criar as
+              questões.
+            </p>
+            <Link to={`/conteudos/${conteudoId}`} className="primary-button small button-with-spinner">
+              <ArrowLeft size={14} />
+              <span>Voltar ao conteúdo</span>
+            </Link>
+          </div>
+        </section>
+      ) : concluiuTodas ? (
+        <section className="content-card quiz-summary">
+          <Trophy size={56} className="quiz-summary-icon" aria-hidden="true" />
+          <h2>Você concluiu todas as questões!</h2>
+          <p className="quiz-summary-score">
+            <strong>{totalAcertos}</strong> de <strong>{questoes.length}</strong> corretas (
+            {Math.round((totalAcertos / questoes.length) * 100)}% de acerto)
           </p>
+          <div className="quiz-summary-actions">
+            <button type="button" className="secondary-button button-with-spinner" onClick={refazer}>
+              <RotateCcw size={16} />
+              <span>Refazer</span>
+            </button>
+            <Link to={`/conteudos/${conteudoId}`} className="secondary-button button-with-spinner">
+              <ArrowLeft size={16} />
+              <span>Voltar ao conteúdo</span>
+            </Link>
+            <Link to="/desempenho" className="primary-button button-with-spinner">
+              <span>Ver desempenho</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
         </section>
       ) : (
         <section className="content-card">
           <header className="quiz-header">
             <span>
-              Questao {indice + 1} de {questoes.length}
+              Questão {indice + 1} de {questoes.length}
             </span>
             <span className="quiz-score">
               {totalAcertos} acertos / {totalRespondidas} respondidas
@@ -160,22 +202,50 @@ function QuestoesPage() {
             </ul>
 
             {feedbackAtual ? (
-              <div
-                className={`feedback ${feedbackAtual.acertou ? 'success' : 'error'}`}
-                role="status"
-              >
-                {feedbackAtual.mensagem}
-              </div>
+              <>
+                <div
+                  className={`feedback ${feedbackAtual.acertou ? 'success' : 'error'}`}
+                  role="status"
+                >
+                  {feedbackAtual.mensagem}
+                </div>
+
+                {!feedbackAtual.acertou && feedbackAtual.alternativa_escolhida?.justificativa ? (
+                  <div className="justificativa-card justificativa-erro">
+                    <span className="justificativa-label">Por que essa alternativa está errada</span>
+                    <p>{feedbackAtual.alternativa_escolhida.justificativa}</p>
+                  </div>
+                ) : null}
+
+                {feedbackAtual.alternativa_correta?.justificativa ? (
+                  <div className="justificativa-card justificativa-correta">
+                    <span className="justificativa-label">
+                      {feedbackAtual.acertou
+                        ? 'Por que sua resposta está correta'
+                        : 'Por que a alternativa correta é a certa'}
+                    </span>
+                    <p>{feedbackAtual.alternativa_correta.justificativa}</p>
+                  </div>
+                ) : null}
+
+                {!feedbackAtual.alternativa_escolhida?.justificativa &&
+                !feedbackAtual.alternativa_correta?.justificativa ? (
+                  <p className="muted justificativa-empty">
+                    Sem explicação detalhada para esta questão.
+                  </p>
+                ) : null}
+              </>
             ) : null}
 
             <div className="quiz-actions">
               <button
                 type="button"
-                className="secondary-button small"
+                className="secondary-button small quiz-nav button-with-spinner"
                 onClick={anterior}
                 disabled={indice === 0}
               >
-                Anterior
+                <ArrowLeft size={14} />
+                <span>Anterior</span>
               </button>
 
               {!feedbackAtual ? (
@@ -190,28 +260,15 @@ function QuestoesPage() {
               ) : (
                 <button
                   type="button"
-                  className="primary-button"
+                  className="primary-button button-with-spinner"
                   onClick={proxima}
-                  disabled={indice === questoes.length - 1}
                 >
-                  Proxima
+                  <span>{indice === questoes.length - 1 ? 'Ver resultado' : 'Próxima'}</span>
+                  <ArrowRight size={14} />
                 </button>
               )}
             </div>
           </article>
-
-          {concluiuTodas ? (
-            <div className="quiz-finished">
-              <strong>Voce respondeu todas as questoes!</strong>
-              <span>
-                Acertou {totalAcertos} de {questoes.length} (
-                {Math.round((totalAcertos / questoes.length) * 100)}%).
-              </span>
-              <Link to="/desempenho" className="primary-button small">
-                Ver desempenho
-              </Link>
-            </div>
-          ) : null}
         </section>
       )}
     </main>

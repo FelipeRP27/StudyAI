@@ -203,3 +203,5 @@ CREATE TABLE IF NOT EXISTS ia_cache (
 );
 
 CREATE INDEX IF NOT EXISTS idx_ia_cache_created_at ON ia_cache (created_at);
+
+ALTER TABLE alternativas ADD COLUMN IF NOT EXISTS justificativa TEXT;

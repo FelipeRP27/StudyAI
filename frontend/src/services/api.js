@@ -11,12 +11,12 @@ function setUnauthorizedHandler(handler) {
 }
 
 function buildFriendlyMessage(status, body) {
-  if (status === 401) return 'Sessao expirada. Faca login novamente.';
-  if (status === 403) return 'Voce nao tem permissao para esta acao.';
-  if (status === 404) return body?.message || 'Recurso nao encontrado.';
+  if (status === 401) return 'Sessão expirada. Faça login novamente.';
+  if (status === 403) return 'Você não tem permissão para esta ação.';
+  if (status === 404) return body?.message || 'Recurso não encontrado.';
   if (status === 429) return 'Muitas tentativas. Aguarde alguns instantes.';
-  if (status >= 500) return body?.message || 'Servico indisponivel no momento. Tente novamente.';
-  return body?.message || 'Erro ao processar a requisicao.';
+  if (status >= 500) return body?.message || 'Serviço indisponível no momento. Tente novamente.';
+  return body?.message || 'Erro ao processar a requisição.';
 }
 
 async function request(path, options = {}) {
@@ -36,7 +36,7 @@ async function request(path, options = {}) {
       ...options
     });
   } catch (networkError) {
-    const err = new Error('Sem conexao com o servidor. Verifique sua internet ou se o backend esta no ar.');
+    const err = new Error('Sem conexão com o servidor. Verifique sua internet ou se o backend está no ar.');
     err.isNetworkError = true;
     throw err;
   }

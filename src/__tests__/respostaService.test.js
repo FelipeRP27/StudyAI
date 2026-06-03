@@ -48,7 +48,9 @@ describe('respostaService.responder', () => {
     });
 
     expect(output.feedback.acertou).toBe(true);
-    expect(output.feedback.alternativa_correta).toEqual({ id: 11, texto: 'B' });
+    expect(output.feedback.alternativa_correta).toEqual(
+      expect.objectContaining({ id: 11, texto: 'B' })
+    );
     expect(respostaRepository.create).toHaveBeenCalledWith({
       usuarioId: 7,
       questaoId: 1,
@@ -65,7 +67,9 @@ describe('respostaService.responder', () => {
     });
 
     expect(output.feedback.acertou).toBe(false);
-    expect(output.feedback.alternativa_correta).toEqual({ id: 11, texto: 'B' });
+    expect(output.feedback.alternativa_correta).toEqual(
+      expect.objectContaining({ id: 11, texto: 'B' })
+    );
     expect(respostaRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({ alternativaId: 10, isCorreta: false })
     );
