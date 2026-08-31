@@ -211,11 +211,13 @@ StudyAI/
 │       │                           # CopyButton, PasswordInput, AuthShell,
 │       │                           # useDocumentTitle, colorPalette, extractTextFromFile
 │       └── styles/global.css       # design tokens em :root
+├── docs/                           # documentação do produto
+│   ├── FUNCIONALIDADES.md          # planejamento das sprints 6 a 10
+│   └── StudyAI-Analise-do-Produto.pdf
 ├── docker-compose.yml
 ├── Dockerfile
 ├── frontend/Dockerfile
-├── README.md
-└── CLAUDE.md                       # guia interno para sessões com Claude
+└── README.md
 ```
 
 ---
