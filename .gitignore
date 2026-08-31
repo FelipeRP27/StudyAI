@@ -1,5 +1,37 @@
+# Dependências
 node_modules/
-.env
-npm-debug.log*
+
+# Build
 dist/
+build/
+
+# Ambiente (nunca commitar segredos)
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Testes
+coverage/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.swp
+
+# Ferramentas de assistente de código (config local, fora do repo)
 .claude/
+CLAUDE.md
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+.github/copilot-instructions.md
