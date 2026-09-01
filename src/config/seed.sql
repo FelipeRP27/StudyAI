@@ -63,7 +63,8 @@ INSERT INTO pontos_chave (conteudo_id, texto) VALUES
 
 INSERT INTO questoes (id, conteudo_id, enunciado) VALUES
   (3001, 2001, 'Qual o conjunto de principios expressos da Administracao Publica no art. 37 da CF/88?'),
-  (3002, 2003, 'A imunidade tributaria recipoca alcanca qual tipo de tributo?')
+  (3002, 2003, 'A imunidade tributaria recipoca alcanca qual tipo de tributo?'),
+  (3003, 2002, 'Qual caracteristica NAO se aplica aos direitos fundamentais?')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO alternativas (questao_id, texto, is_correta, justificativa) VALUES
@@ -82,7 +83,15 @@ INSERT INTO alternativas (questao_id, texto, is_correta, justificativa) VALUES
   (3002, 'Contribuicoes de melhoria', FALSE,
     'Contribuicao de melhoria decorre de obra publica que valoriza imovel; tambem nao e alcancada pela imunidade reciproca, restrita aos impostos.'),
   (3002, 'Emprestimos compulsorios', FALSE,
-    'Emprestimos compulsorios sao tributos instituidos pela Uniao em situacoes excepcionais (art. 148 CF) e nao se enquadram na imunidade reciproca, que cobre apenas impostos.');
+    'Emprestimos compulsorios sao tributos instituidos pela Uniao em situacoes excepcionais (art. 148 CF) e nao se enquadram na imunidade reciproca, que cobre apenas impostos.'),
+  (3003, 'Transferibilidade a terceiros', TRUE,
+    'Os direitos fundamentais sao inalienaveis e irrenunciaveis, ou seja, nao podem ser transferidos ou negociados. Essa e a caracteristica que NAO se aplica a eles.'),
+  (3003, 'Universalidade', FALSE,
+    'A universalidade se aplica: os direitos fundamentais alcancam todas as pessoas, independentemente de nacionalidade ou condicao.'),
+  (3003, 'Historicidade', FALSE,
+    'A historicidade se aplica: os direitos fundamentais resultam de um processo historico e se ampliam ao longo do tempo, em dimensoes sucessivas.'),
+  (3003, 'Irrenunciabilidade', FALSE,
+    'A irrenunciabilidade se aplica: o titular nao pode abrir mao dos seus direitos fundamentais, ainda que queira.');
 
 INSERT INTO flashcards (conteudo_id, frente, verso) VALUES
   (2001, 'O que significa LIMPE?', 'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiencia'),
@@ -97,7 +106,36 @@ INSERT INTO tarefas (usuario_id, materia_id, titulo, descricao, data_limite, sta
   (1000, NULL, 'Simulado completo', 'Banca CESPE 2 horas', CURRENT_DATE + INTERVAL '15 days', 'pendente'),
   (1000, 1001, 'Ler doutrina sobre controle de constitucionalidade', NULL, CURRENT_DATE - INTERVAL '7 days', 'concluida');
 
+-- Historico de respostas do usuario demo.
+-- Produz as tres faixas de prioridade do plano de estudo:
+--   Principios da Administracao Publica -> 13/25 = 52%  (prioridade alta, 12 dias sem responder)
+--   Direitos Fundamentais               -> 17/25 = 68%  (prioridade media, 3 dias sem responder)
+--   Imunidades Tributarias              -> 21/23 = 91%  (prioridade baixa, 1 dia sem responder)
+-- So roda se o usuario demo ainda nao tiver respostas, para nao duplicar o historico.
+INSERT INTO respostas_questoes (usuario_id, questao_id, alternativa_id, is_correta, created_at)
+SELECT
+  1000,
+  plano.questao_id,
+  (
+    SELECT a.id
+    FROM alternativas a
+    WHERE a.questao_id = plano.questao_id
+      AND a.is_correta = (g.i <= plano.acertos)
+    LIMIT 1
+  ),
+  g.i <= plano.acertos,
+  NOW() - (plano.dias_atras || ' days')::interval - (g.i || ' hours')::interval
+FROM (VALUES
+  (3001, 25, 13, 12),
+  (3003, 25, 17, 3),
+  (3002, 23, 21, 1)
+) AS plano(questao_id, total, acertos, dias_atras)
+CROSS JOIN LATERAL generate_series(1, plano.total) AS g(i)
+WHERE NOT EXISTS (
+  SELECT 1 FROM respostas_questoes WHERE usuario_id = 1000
+);
+
 SELECT setval('usuarios_id_seq', GREATEST((SELECT MAX(id) FROM usuarios), 1000));
 SELECT setval('materias_id_seq', GREATEST((SELECT MAX(id) FROM materias), 1003));
 SELECT setval('conteudos_id_seq', GREATEST((SELECT MAX(id) FROM conteudos), 2003));
-SELECT setval('questoes_id_seq', GREATEST((SELECT MAX(id) FROM questoes), 3002));
+SELECT setval('questoes_id_seq', GREATEST((SELECT MAX(id) FROM questoes), 3003));
