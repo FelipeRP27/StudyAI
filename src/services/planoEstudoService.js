@@ -11,21 +11,23 @@ const RECOMENDACOES = {
 
 function montarJustificativa(item, taxaGeral) {
   if (item.prioridade === 'sem_dados') {
-    return `Você respondeu apenas ${item.total_respostas} questão(ões) deste conteúdo. Ainda não há dados suficientes para avaliar seu desempenho.`;
+    const questoes = item.total_respostas === 1 ? 'questão' : 'questões';
+    return `Você respondeu apenas ${item.total_respostas} ${questoes} deste conteúdo. Ainda não há dados suficientes para avaliar seu desempenho.`;
   }
 
   const partes = [
-    `Você respondeu ${item.total_respostas} questões deste conteúdo e acertou ${item.taxa_acerto}%.`
+    `Você respondeu ${item.total_respostas} questões deste conteúdo e acertou ${Math.round(item.taxa_acerto)}%.`
   ];
 
   if (item.taxa_acerto < taxaGeral) {
-    partes.push(`Sua taxa está abaixo da sua média geral de ${taxaGeral}%.`);
+    partes.push(`Sua taxa está abaixo da sua média geral de ${Math.round(taxaGeral)}%.`);
   } else {
-    partes.push(`Sua taxa está em linha com a sua média geral de ${taxaGeral}%.`);
+    partes.push(`Sua taxa está em linha com a sua média geral de ${Math.round(taxaGeral)}%.`);
   }
 
   if (item.dias_sem_responder !== null && item.dias_sem_responder > 0) {
-    partes.push(`A última resposta foi há ${item.dias_sem_responder} dia(s).`);
+    const dias = item.dias_sem_responder === 1 ? 'dia' : 'dias';
+    partes.push(`A última resposta foi há ${item.dias_sem_responder} ${dias}.`);
   }
 
   return partes.join(' ');
