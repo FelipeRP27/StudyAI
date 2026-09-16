@@ -121,6 +121,7 @@ docker compose down -v               # parar E apagar o banco (reset total)
 docker compose logs -f backend       # acompanhar logs do backend
 docker compose restart frontend      # recarregar só o frontend
 docker exec -it studyai_db psql -U postgres -d studyai   # abrir psql no banco
+docker exec studyai_backend node src/scripts/classificarAssuntos.js   # classifica pela IA o assunto das questoes antigas
 ```
 
 ### Troubleshooting

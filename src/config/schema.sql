@@ -205,3 +205,8 @@ CREATE TABLE IF NOT EXISTS ia_cache (
 CREATE INDEX IF NOT EXISTS idx_ia_cache_created_at ON ia_cache (created_at);
 
 ALTER TABLE alternativas ADD COLUMN IF NOT EXISTS justificativa TEXT;
+
+ALTER TABLE questoes ADD COLUMN IF NOT EXISTS assunto VARCHAR(120);
+
+CREATE INDEX IF NOT EXISTS idx_respostas_usuario_questao_data
+    ON respostas_questoes (usuario_id, questao_id, created_at);

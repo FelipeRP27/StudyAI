@@ -1,4 +1,5 @@
 const AppError = require('../config/appError');
+const { normalizarAssunto } = require('./assuntoInputDto');
 
 function normalizeAlternativas(alternativas) {
   if (!Array.isArray(alternativas) || alternativas.length === 0) {
@@ -18,7 +19,7 @@ function normalizeAlternativas(alternativas) {
 }
 
 function buildCreateQuestaoInputDto(body, usuarioId) {
-  const { conteudo_id: conteudoId, enunciado, alternativas } = body;
+  const { conteudo_id: conteudoId, enunciado, assunto, alternativas } = body;
 
   if (!conteudoId || !enunciado) {
     throw new AppError('conteudo_id and enunciado are required', 400);
@@ -33,6 +34,7 @@ function buildCreateQuestaoInputDto(body, usuarioId) {
   return {
     conteudoId: parsedConteudoId,
     enunciado: String(enunciado).trim(),
+    assunto: normalizarAssunto(assunto),
     alternativas: normalizeAlternativas(alternativas),
     usuarioId: Number(usuarioId)
   };

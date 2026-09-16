@@ -30,11 +30,12 @@ describe('questaoService.generateFromConteudo', () => {
     let questaoIdSeq = 1;
     let alternativaIdSeq = 1;
 
-    questaoRepository.create.mockImplementation(({ conteudoId, enunciado }) =>
+    questaoRepository.create.mockImplementation(({ conteudoId, enunciado, assunto }) =>
       Promise.resolve({
         id: questaoIdSeq++,
         conteudo_id: conteudoId,
         enunciado,
+        assunto,
         created_at: '2026-04-22T00:00:00Z'
       })
     );
@@ -89,6 +90,37 @@ describe('questaoService.generateFromConteudo', () => {
     expect(output[0].alternativas).toHaveLength(3);
     expect(questaoRepository.create).toHaveBeenCalledTimes(1);
     expect(questaoRepository.createAlternativa).toHaveBeenCalledTimes(3);
+  });
+
+  test('persiste o assunto normalizado de cada questao e aceita questao sem assunto', async () => {
+    iaService.generateJson.mockResolvedValue({
+      questoes: [
+        {
+          enunciado: 'Q com assunto',
+          assunto: '  anulacao  e revogacao ',
+          alternativas: [
+            { texto: 'a', is_correta: true },
+            { texto: 'b', is_correta: false }
+          ]
+        },
+        {
+          enunciado: 'Q sem assunto',
+          alternativas: [
+            { texto: 'a', is_correta: false },
+            { texto: 'b', is_correta: true }
+          ]
+        }
+      ]
+    });
+
+    const output = await questaoService.generateFromConteudo({ conteudoId: 1, usuarioId: 2 });
+
+    expect(questaoRepository.create).toHaveBeenNthCalledWith(1, {
+      conteudoId: 1,
+      enunciado: 'Q com assunto',
+      assunto: 'Anulacao e revogacao'
+    });
+    expect(output.map((questao) => questao.assunto)).toEqual(['Anulacao e revogacao', null]);
   });
 
   test('lanca AppError quando IA retorna lista vazia', async () => {
