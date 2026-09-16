@@ -50,9 +50,9 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 
 ## Stack
 
-**Backend** — Node.js 20 + Express + PostgreSQL 16 (via `pg`, sem ORM) + JWT/bcrypt + Google Generative AI SDK + Jest
+**Backend** — Node.js 24 LTS + Express 5 + PostgreSQL 16 (via `pg`, sem ORM) + JWT/bcrypt 6 + Google Generative AI SDK + Jest 30 + Supertest
 
-**Frontend** — React 18 + Vite 5 + React Router 6 + Context API + lucide-react + pdfjs-dist (lazy) + CSS custom com design tokens
+**Frontend** — React 19 + Vite 8 + React Router 7 + Context API + lucide-react 1 + pdfjs-dist 6 (lazy) + CSS custom com design tokens
 
 **Infra** — Docker Compose com 3 serviços (`db`, `backend`, `frontend`)
 
@@ -139,11 +139,12 @@ npm install        # apenas na primeira vez ou após mudar deps
 npm test
 ```
 
-**70 testes** em 12 suites, cobrindo:
+**72 testes** em 13 suites, cobrindo:
 - **Sprint 3** — `iaService`, `resumoService`, `pontoChaveService`, `questaoService`, `flashcardService`, `processamentoService`
 - **Sprint 4** — `respostaService`, `tarefaService`, `tarefaOutputDto`
 - **Sprint 5 / pós** — `desempenhoService` (com drill-down por matéria), retry/cache do `iaService`
 - **Plano de Estudo** — `analiseDesempenhoService` (taxa, prioridade, recência, ordenação), `planoEstudoService`
+- **App HTTP** — `app.test.js` com Supertest (corpo ausente → 400, rota inexistente → 404)
 
 Tudo com mocks de Gemini e dos repositórios (não chama IA real nem precisa de banco).
 
