@@ -2,7 +2,7 @@
 
 Assistente inteligente para estudantes de concursos públicos transformarem conteúdo teórico em material de estudo ativo (resumo, pontos-chave, questões e flashcards) com apoio de IA generativa (Google Gemini).
 
-> **Status: MVP completo.** Sprints 1–5 entregues + reformulação visual final + extras pós-sprint. Pronto para apresentação.
+> **Status: MVP completo.** Sprints 1–5 entregues + reformulação visual final + extras pós-sprint + Plano de Estudo personalizado. Pronto para apresentação.
 
 ---
 
@@ -26,10 +26,11 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 2. **Matérias** — criar, listar, editar e excluir (cascade nos conteúdos vinculados).
 3. **Conteúdos** — criar colando texto **ou anexando PDF/TXT** (extração no navegador via `pdfjs-dist` carregado dinamicamente).
 4. **Geração com IA** (Google Gemini): em um clique gera resumo, pontos-chave, questões com alternativas e flashcards. Indicadores em tempo real das 4 etapas.
-5. **Resolução de questões** com correção automática e feedback (alternativa correta destacada em verde).
+5. **Resolução de questões** com correção automática e feedback (alternativa correta destacada em verde) e justificativa gerada pela IA para cada alternativa.
 6. **Flashcards** com flip 3D, marcação de revisão por usuário e indicador de progresso (dots no deck).
 7. **Tarefas de estudo** com prazo, urgência calculada (vencida/urgente/próxima/normal/concluída) e badges coloridas.
 8. **Desempenho** com taxa de acerto geral, recorte por matéria, evolução diária e **drill-down por matéria** mostrando taxa por conteúdo (`/desempenho/materias/:id`).
+9. **Meu plano** (`/plano`) — plano de estudo personalizado calculado a partir das respostas registradas. Cada conteúdo recebe prioridade (alta < 60% de acerto, média < 80%, baixa ≥ 80%; `sem_dados` com menos de 5 respostas), justificativa com taxa, comparação com a média geral e dias sem praticar, e uma ação recomendada. Abaixo de 10 respostas no total, orienta questões de diagnóstico em vez de recomendar sem base. Detalhes em `docs/DADOS-DESEMPENHO.md`.
 
 ### Robustez e qualidade
 - **Cache de IA por hash sha256** do prompt (`ia_cache`) — re-gerar o mesmo conteúdo retorna instantâneo, sem custo de cota.
@@ -138,10 +139,11 @@ npm install        # apenas na primeira vez ou após mudar deps
 npm test
 ```
 
-**58 testes** em 10 suites, cobrindo:
+**70 testes** em 12 suites, cobrindo:
 - **Sprint 3** — `iaService`, `resumoService`, `pontoChaveService`, `questaoService`, `flashcardService`, `processamentoService`
 - **Sprint 4** — `respostaService`, `tarefaService`, `tarefaOutputDto`
 - **Sprint 5 / pós** — `desempenhoService` (com drill-down por matéria), retry/cache do `iaService`
+- **Plano de Estudo** — `analiseDesempenhoService` (taxa, prioridade, recência, ordenação), `planoEstudoService`
 
 Tudo com mocks de Gemini e dos repositórios (não chama IA real nem precisa de banco).
 
@@ -164,6 +166,7 @@ Roteiro sugerido de demo:
 - Aba "Questões" → tela dedicada → responder uma certa e outra errada (feedback colorido)
 - Aba "Flashcards" → flip 3D + marcar como revisado + dots de progresso
 - `/desempenho` → clicar numa matéria para ver o drill-down com taxa por conteúdo
+- `/plano` → prioridades por conteúdo com justificativa e ação recomendada (o seed já traz histórico suficiente)
 - `/tarefas` → criar tarefa com prazo no passado (vira "vencida" vermelha)
 
 ---
@@ -201,9 +204,9 @@ StudyAI/
 │   └── __tests__/                  # Jest com mocks
 ├── frontend/
 │   └── src/
-│       ├── pages/                  # 10 páginas (Login, Register, Dashboard,
+│       ├── pages/                  # 11 páginas (Login, Register, Dashboard,
 │       │                           # Materia, Conteudo, Questoes, Flashcards,
-│       │                           # Desempenho, DesempenhoMateria, Tarefas)
+│       │                           # MeuPlano, Desempenho, DesempenhoMateria, Tarefas)
 │       ├── contexts/               # AuthContext
 │       ├── services/               # api.js + um service por recurso
 │       ├── router/                 # AppRouter + ProtectedRoute (envolve TopBar) + PublicRoute
@@ -213,6 +216,7 @@ StudyAI/
 │       └── styles/global.css       # design tokens em :root
 ├── docs/                           # documentação do produto
 │   ├── FUNCIONALIDADES.md          # planejamento das sprints 6 a 10
+│   ├── DADOS-DESEMPENHO.md         # dados que alimentam o Plano de Estudo
 │   └── StudyAI-Analise-do-Produto.pdf
 ├── docker-compose.yml
 ├── Dockerfile
@@ -232,6 +236,8 @@ StudyAI/
 | 4 | Estudo ativo (respostas, desempenho, tarefas, telas dedicadas) | ✅ Concluída |
 | 5 | Estabilização (cache IA, validações, erros globais, polimento, seed) | ✅ Concluída |
 | Pós | CRUD matéria no frontend, drill-down desempenho, anexo PDF/TXT, reforma visual completa (Inter, ícones, skeletons, design tokens slate) | ✅ Concluída |
+| Pós | Plano de Estudo personalizado (análise de desempenho por conteúdo, página Meu Plano, histórico no seed) | ✅ Concluída |
+| 6–10 | Roadmap em `docs/FUNCIONALIDADES.md` (repetição espaçada, simulados, edital, discursiva...) | ⏳ Não iniciado |
 
 ---
 
