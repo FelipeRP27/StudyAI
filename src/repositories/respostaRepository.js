@@ -81,6 +81,28 @@ async function getEvolucaoDiaria(usuarioId, dias = 30) {
   return result.rows;
 }
 
+async function getDesempenhoPorConteudo(usuarioId) {
+  const query = `
+    SELECT
+      c.id AS conteudo_id,
+      c.titulo AS conteudo_titulo,
+      m.id AS materia_id,
+      m.nome AS materia_nome,
+      COUNT(r.*)::int AS total_respostas,
+      COUNT(r.*) FILTER (WHERE r.is_correta)::int AS total_acertos,
+      MAX(r.created_at) AS ultima_resposta_em
+    FROM respostas_questoes r
+    INNER JOIN questoes q ON q.id = r.questao_id
+    INNER JOIN conteudos c ON c.id = q.conteudo_id
+    INNER JOIN materias m ON m.id = c.materia_id
+    WHERE r.usuario_id = $1
+    GROUP BY c.id, c.titulo, m.id, m.nome
+    ORDER BY m.nome ASC, c.titulo ASC
+  `;
+  const result = await db.query(query, [usuarioId]);
+  return result.rows;
+}
+
 async function getResumoPorMateria(materiaId, usuarioId) {
   const query = `
     SELECT
@@ -140,6 +162,7 @@ module.exports = {
   getDesempenhoResumo,
   getDesempenhoPorMateria,
   getEvolucaoDiaria,
+  getDesempenhoPorConteudo,
   getResumoPorMateria,
   getDesempenhoPorConteudoEmMateria,
   getEvolucaoDiariaPorMateria

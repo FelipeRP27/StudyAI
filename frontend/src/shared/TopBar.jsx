@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { BarChart3, ChevronDown, ListTodo, LayoutDashboard, LogOut } from 'lucide-react';
+import { BarChart3, ChevronDown, Compass, ListTodo, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/plano', label: 'Meu plano', icon: Compass },
   { to: '/tarefas', label: 'Tarefas', icon: ListTodo },
   { to: '/desempenho', label: 'Desempenho', icon: BarChart3 }
 ];

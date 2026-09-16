@@ -6,6 +6,7 @@ import MateriaPage from '../pages/MateriaPage';
 import ConteudoPage from '../pages/ConteudoPage';
 import QuestoesPage from '../pages/QuestoesPage';
 import FlashcardsPage from '../pages/FlashcardsPage';
+import MeuPlanoPage from '../pages/MeuPlanoPage';
 import DesempenhoPage from '../pages/DesempenhoPage';
 import DesempenhoMateriaPage from '../pages/DesempenhoMateriaPage';
 import TarefasPage from '../pages/TarefasPage';
@@ -68,6 +69,14 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <FlashcardsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plano"
+        element={
+          <ProtectedRoute>
+            <MeuPlanoPage />
           </ProtectedRoute>
         }
       />
