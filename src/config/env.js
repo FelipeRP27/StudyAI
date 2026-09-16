@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const env = {
   port: Number(process.env.PORT) || 3000,
@@ -12,7 +12,7 @@ const env = {
   jwtSecret: process.env.JWT_SECRET || 'change_this_secret',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1d',
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.0-flash'
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
 };
 
 module.exports = {
