@@ -36,13 +36,17 @@ const questoesPrompt = (conteudo, quantidade = 5) => ({
     'IMPORTANTE: para CADA alternativa (correta ou errada), inclua tambem o campo "justificativa": ' +
     'na alternativa correta, explique por que ela esta certa; nas alternativas erradas, explique especificamente ' +
     'qual o erro de cada uma (conceito confundido, dado incorreto, exceção mal aplicada, etc). ' +
-    'A justificativa deve ter de 1 a 3 frases, em portugues do Brasil, conectada ao conteudo fornecido.\n\n' +
+    'A justificativa deve ter de 1 a 3 frases, em portugues do Brasil, conectada ao conteudo fornecido. ' +
+    'Inclua tambem em cada questao o campo "assunto": o topico especifico cobrado, com 2 a 6 palavras ' +
+    '(ex.: "Anulacao e revogacao"), mais especifico que o titulo do conteudo. ' +
+    'Questoes sobre o mesmo topico devem usar exatamente o mesmo assunto.\n\n' +
     `${buildConteudoContext(conteudo)}\n\n` +
     'Retorne exclusivamente este JSON:\n' +
     '{\n' +
     '  "questoes": [\n' +
     '    {\n' +
     '      "enunciado": "<texto da questao>",\n' +
+    '      "assunto": "<topico especifico da questao>",\n' +
     '      "alternativas": [\n' +
     '        { "texto": "<alternativa A>", "is_correta": false, "justificativa": "<por que A esta errada>" },\n' +
     '        { "texto": "<alternativa B>", "is_correta": true, "justificativa": "<por que B esta correta>" },\n' +
@@ -68,9 +72,23 @@ const flashcardsPrompt = (conteudo, quantidade = 8) => ({
     '}'
 });
 
+const assuntosQuestoesPrompt = (conteudo, questoes) => ({
+  systemInstruction: SYSTEM_BASE,
+  prompt:
+    'Classifique cada questao abaixo pelo assunto especifico que ela cobra dentro do conteudo. ' +
+    'O assunto deve ter de 2 a 6 palavras (ex.: "Anulacao e revogacao") e ser mais especifico que o titulo do conteudo. ' +
+    'Questoes sobre o mesmo topico devem receber exatamente o mesmo assunto.\n\n' +
+    `${buildConteudoContext(conteudo)}\n\n` +
+    'Questoes:\n' +
+    questoes.map((questao) => `[id ${questao.id}] ${questao.enunciado}`).join('\n') +
+    '\n\nRetorne exclusivamente este JSON, com um item por questao:\n' +
+    '{ "assuntos": [ { "questao_id": <id>, "assunto": "<assunto>" } ] }'
+});
+
 module.exports = {
   resumoPrompt,
   pontosChavePrompt,
   questoesPrompt,
-  flashcardsPrompt
+  flashcardsPrompt,
+  assuntosQuestoesPrompt
 };

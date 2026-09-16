@@ -2,6 +2,7 @@ const questaoRepository = require('../repositories/questaoRepository');
 const conteudoOwnershipService = require('./conteudoOwnershipService');
 const iaService = require('./iaService');
 const { questoesPrompt } = require('./iaPrompts');
+const { normalizarAssunto } = require('../dtos/assuntoInputDto');
 const AppError = require('../config/appError');
 const {
   toQuestaoResponseDto,
@@ -75,6 +76,7 @@ function validateQuestoesPayload(payload) {
 
       return {
         enunciado: questao.enunciado.trim(),
+        assunto: normalizarAssunto(questao.assunto),
         alternativas
       };
     })
@@ -97,7 +99,8 @@ async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 5 }) {
   for (const questaoData of questoesValidas) {
     const questao = await questaoRepository.create({
       conteudoId,
-      enunciado: questaoData.enunciado
+      enunciado: questaoData.enunciado,
+      assunto: questaoData.assunto
     });
 
     const alternativas = [];

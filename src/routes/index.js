@@ -1,6 +1,7 @@
 const express = require('express');
 const alternativaRoutes = require('./alternativaRoutes');
 const authRoutes = require('./authRoutes');
+const cadernoErrosRoutes = require('./cadernoErrosRoutes');
 const conteudoRoutes = require('./conteudoRoutes');
 const desempenhoRoutes = require('./desempenhoRoutes');
 const flashcardRoutes = require('./flashcardRoutes');
@@ -18,6 +19,7 @@ const router = express.Router();
 
 router.use('/alternativas', alternativaRoutes);
 router.use('/auth', authRoutes);
+router.use('/caderno-erros', cadernoErrosRoutes);
 router.use('/conteudos', conteudoRoutes);
 router.use('/desempenho', desempenhoRoutes);
 router.use('/flashcards', flashcardRoutes);

@@ -14,6 +14,7 @@ function toQuestaoResponseDto(questao) {
     id: questao.id,
     conteudo_id: questao.conteudo_id,
     enunciado: questao.enunciado,
+    assunto: questao.assunto ?? null,
     created_at: questao.created_at,
     alternativas: (questao.alternativas || []).map(toAlternativaResponseDto)
   };
