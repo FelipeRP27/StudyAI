@@ -7,6 +7,7 @@ import ConteudoPage from '../pages/ConteudoPage';
 import QuestoesPage from '../pages/QuestoesPage';
 import FlashcardsPage from '../pages/FlashcardsPage';
 import MeuPlanoPage from '../pages/MeuPlanoPage';
+import CadernoErrosPage from '../pages/CadernoErrosPage';
 import DesempenhoPage from '../pages/DesempenhoPage';
 import DesempenhoMateriaPage from '../pages/DesempenhoMateriaPage';
 import TarefasPage from '../pages/TarefasPage';
@@ -77,6 +78,14 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <MeuPlanoPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/erros"
+        element={
+          <ProtectedRoute>
+            <CadernoErrosPage />
           </ProtectedRoute>
         }
       />

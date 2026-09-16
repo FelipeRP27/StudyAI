@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpenCheck, RotateCcw, Trophy } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpenCheck, NotebookPen, RotateCcw, Trophy } from 'lucide-react';
 import Skeleton, { SkeletonText } from '../shared/Skeleton';
+import QuestaoQuiz, { AssuntoTag } from '../shared/QuestaoQuiz';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
-import { respostaService } from '../services/respostaService';
 
 function QuestoesPage() {
   useDocumentTitle('Resolver questões');
@@ -13,13 +13,8 @@ function QuestoesPage() {
 
   const [conteudo, setConteudo] = useState(null);
   const [questoes, setQuestoes] = useState([]);
-  const [indice, setIndice] = useState(0);
-  const [escolhas, setEscolhas] = useState({});
-  const [feedbacks, setFeedbacks] = useState({});
-
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-  const [isResponding, setIsResponding] = useState(false);
 
   const carregar = useCallback(async () => {
     setIsLoading(true);
@@ -42,52 +37,40 @@ function QuestoesPage() {
     carregar();
   }, [carregar]);
 
-  const questaoAtual = questoes[indice] || null;
-  const feedbackAtual = questaoAtual ? feedbacks[questaoAtual.id] : null;
-  const escolhaAtual = questaoAtual ? escolhas[questaoAtual.id] : null;
-
-  const totalRespondidas = Object.keys(feedbacks).length;
-  const totalAcertos = useMemo(
-    () => Object.values(feedbacks).filter((f) => f?.acertou).length,
-    [feedbacks]
+  const renderResultado = ({ totalAcertos, total, refazer }) => (
+    <section className="content-card quiz-summary">
+      <Trophy size={56} className="quiz-summary-icon" aria-hidden="true" />
+      <h2>Você concluiu todas as questões!</h2>
+      <p className="quiz-summary-score">
+        <strong>{totalAcertos}</strong> de <strong>{total}</strong> corretas (
+        {Math.round((totalAcertos / total) * 100)}% de acerto)
+      </p>
+      <div className="quiz-summary-actions">
+        <button type="button" className="secondary-button button-with-spinner" onClick={refazer}>
+          <RotateCcw size={16} />
+          <span>Refazer</span>
+        </button>
+        {totalAcertos < total ? (
+          <Link
+            to={`/erros?conteudo_id=${conteudoId}`}
+            className="secondary-button button-with-spinner"
+          >
+            <NotebookPen size={16} />
+            <span>Ver caderno de erros</span>
+          </Link>
+        ) : (
+          <Link to={`/conteudos/${conteudoId}`} className="secondary-button button-with-spinner">
+            <ArrowLeft size={16} />
+            <span>Voltar ao conteúdo</span>
+          </Link>
+        )}
+        <Link to="/desempenho" className="primary-button button-with-spinner">
+          <span>Ver desempenho</span>
+          <ArrowRight size={16} />
+        </Link>
+      </div>
+    </section>
   );
-  const concluiuTodas = questoes.length > 0 && totalRespondidas === questoes.length;
-
-  const selecionar = (alternativaId) => {
-    if (feedbackAtual) return;
-    setEscolhas((atual) => ({ ...atual, [questaoAtual.id]: alternativaId }));
-  };
-
-  const responder = async () => {
-    if (!questaoAtual || !escolhaAtual || feedbackAtual) return;
-    setIsResponding(true);
-    setErrorMessage('');
-    try {
-      const resposta = await respostaService.responder({
-        questao_id: questaoAtual.id,
-        alternativa_id: escolhaAtual
-      });
-      setFeedbacks((atual) => ({ ...atual, [questaoAtual.id]: resposta.feedback }));
-    } catch (error) {
-      setErrorMessage(error.message);
-    } finally {
-      setIsResponding(false);
-    }
-  };
-
-  const proxima = () => {
-    if (indice < questoes.length - 1) setIndice(indice + 1);
-  };
-
-  const anterior = () => {
-    if (indice > 0) setIndice(indice - 1);
-  };
-
-  const refazer = () => {
-    setEscolhas({});
-    setFeedbacks({});
-    setIndice(0);
-  };
 
   return (
     <main className="dashboard-page">
@@ -99,9 +82,7 @@ function QuestoesPage() {
             </Link>
           </p>
           <h1>Resolver questões</h1>
-          <p className="dashboard-copy">
-            {conteudo?.titulo || 'Carregando...'}
-          </p>
+          <p className="dashboard-copy">{conteudo?.titulo || 'Carregando...'}</p>
         </div>
       </section>
 
@@ -135,141 +116,18 @@ function QuestoesPage() {
             </Link>
           </div>
         </section>
-      ) : concluiuTodas ? (
-        <section className="content-card quiz-summary">
-          <Trophy size={56} className="quiz-summary-icon" aria-hidden="true" />
-          <h2>Você concluiu todas as questões!</h2>
-          <p className="quiz-summary-score">
-            <strong>{totalAcertos}</strong> de <strong>{questoes.length}</strong> corretas (
-            {Math.round((totalAcertos / questoes.length) * 100)}% de acerto)
-          </p>
-          <div className="quiz-summary-actions">
-            <button type="button" className="secondary-button button-with-spinner" onClick={refazer}>
-              <RotateCcw size={16} />
-              <span>Refazer</span>
-            </button>
-            <Link to={`/conteudos/${conteudoId}`} className="secondary-button button-with-spinner">
-              <ArrowLeft size={16} />
-              <span>Voltar ao conteúdo</span>
-            </Link>
-            <Link to="/desempenho" className="primary-button button-with-spinner">
-              <span>Ver desempenho</span>
-              <ArrowRight size={16} />
-            </Link>
-          </div>
-        </section>
       ) : (
-        <section className="content-card">
-          <header className="quiz-header">
-            <span>
-              Questão {indice + 1} de {questoes.length}
-            </span>
-            <span className="quiz-score">
-              {totalAcertos} acertos / {totalRespondidas} respondidas
-            </span>
-          </header>
-
-          {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
-
-          <article className="card-inner">
-            <strong>{questaoAtual.enunciado}</strong>
-            <ul className="alt-list">
-              {questaoAtual.alternativas.map((alt, altIdx) => {
-                const letra = String.fromCharCode(65 + altIdx);
-                const selecionada = escolhaAtual === alt.id;
-                let classe = 'alt-item';
-
-                if (feedbackAtual) {
-                  const isCorreta = feedbackAtual.alternativa_correta?.id === alt.id;
-                  if (isCorreta) classe += ' correct';
-                  else if (selecionada) classe += ' wrong';
-                } else if (selecionada) {
-                  classe += ' selected';
-                }
-
-                return (
-                  <li key={alt.id} className={classe}>
-                    <button
-                      type="button"
-                      onClick={() => selecionar(alt.id)}
-                      disabled={Boolean(feedbackAtual) || isResponding}
-                    >
-                      <span className="letra">{letra})</span> {alt.texto}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-
-            {feedbackAtual ? (
-              <>
-                <div
-                  className={`feedback ${feedbackAtual.acertou ? 'success' : 'error'}`}
-                  role="status"
-                >
-                  {feedbackAtual.mensagem}
-                </div>
-
-                {!feedbackAtual.acertou && feedbackAtual.alternativa_escolhida?.justificativa ? (
-                  <div className="justificativa-card justificativa-erro">
-                    <span className="justificativa-label">Por que essa alternativa está errada</span>
-                    <p>{feedbackAtual.alternativa_escolhida.justificativa}</p>
-                  </div>
-                ) : null}
-
-                {feedbackAtual.alternativa_correta?.justificativa ? (
-                  <div className="justificativa-card justificativa-correta">
-                    <span className="justificativa-label">
-                      {feedbackAtual.acertou
-                        ? 'Por que sua resposta está correta'
-                        : 'Por que a alternativa correta é a certa'}
-                    </span>
-                    <p>{feedbackAtual.alternativa_correta.justificativa}</p>
-                  </div>
-                ) : null}
-
-                {!feedbackAtual.alternativa_escolhida?.justificativa &&
-                !feedbackAtual.alternativa_correta?.justificativa ? (
-                  <p className="muted justificativa-empty">
-                    Sem explicação detalhada para esta questão.
-                  </p>
-                ) : null}
-              </>
-            ) : null}
-
-            <div className="quiz-actions">
-              <button
-                type="button"
-                className="secondary-button small quiz-nav button-with-spinner"
-                onClick={anterior}
-                disabled={indice === 0}
-              >
-                <ArrowLeft size={14} />
-                <span>Anterior</span>
-              </button>
-
-              {!feedbackAtual ? (
-                <button
-                  type="button"
-                  className="primary-button"
-                  onClick={responder}
-                  disabled={!escolhaAtual || isResponding}
-                >
-                  {isResponding ? 'Enviando...' : 'Responder'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="primary-button button-with-spinner"
-                  onClick={proxima}
-                >
-                  <span>{indice === questoes.length - 1 ? 'Ver resultado' : 'Próxima'}</span>
-                  <ArrowRight size={14} />
-                </button>
-              )}
-            </div>
-          </article>
-        </section>
+        <QuestaoQuiz
+          questoes={questoes}
+          renderContexto={(questao) =>
+            questao.assunto ? (
+              <div className="quiz-contexto">
+                <AssuntoTag assunto={questao.assunto} />
+              </div>
+            ) : null
+          }
+          renderResultado={renderResultado}
+        />
       )}
     </main>
   );
