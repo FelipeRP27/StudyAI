@@ -155,8 +155,95 @@ async function getEvolucaoDiariaPorMateria(materiaId, usuarioId, dias = 30) {
   return result.rows;
 }
 
+async function getDesempenhoRecentePorConteudo(usuarioId, janela) {
+  const query = `
+    WITH respostas_ordenadas AS (
+      SELECT
+        q.conteudo_id,
+        r.is_correta,
+        ROW_NUMBER() OVER (
+          PARTITION BY q.conteudo_id
+          ORDER BY r.created_at DESC, r.id DESC
+        ) AS posicao
+      FROM respostas_questoes r
+      INNER JOIN questoes q ON q.id = r.questao_id
+      WHERE r.usuario_id = $1
+    )
+    SELECT
+      conteudo_id,
+      COUNT(*) FILTER (WHERE posicao <= $2)::int AS respostas_recentes,
+      COUNT(*) FILTER (WHERE posicao <= $2 AND is_correta)::int AS acertos_recentes
+    FROM respostas_ordenadas
+    GROUP BY conteudo_id
+  `;
+  const result = await db.query(query, [usuarioId, janela]);
+  return result.rows;
+}
+
+async function getSessoesRecentesPorConteudo(usuarioId, limiteSessoes) {
+  const query = `
+    WITH sessoes AS (
+      SELECT
+        q.conteudo_id,
+        DATE(r.created_at) AS dia,
+        BOOL_OR(NOT r.is_correta) AS teve_erro
+      FROM respostas_questoes r
+      INNER JOIN questoes q ON q.id = r.questao_id
+      WHERE r.usuario_id = $1
+      GROUP BY q.conteudo_id, DATE(r.created_at)
+    ),
+    sessoes_ordenadas AS (
+      SELECT
+        conteudo_id,
+        teve_erro,
+        ROW_NUMBER() OVER (PARTITION BY conteudo_id ORDER BY dia DESC) AS posicao
+      FROM sessoes
+    )
+    SELECT
+      conteudo_id,
+      COUNT(*)::int AS sessoes_recentes,
+      COUNT(*) FILTER (WHERE teve_erro)::int AS sessoes_com_erro
+    FROM sessoes_ordenadas
+    WHERE posicao <= $2
+    GROUP BY conteudo_id
+  `;
+  const result = await db.query(query, [usuarioId, limiteSessoes]);
+  return result.rows;
+}
+
+async function getErrosRecentesPorAssunto(usuarioId, janela) {
+  const query = `
+    WITH respostas_ordenadas AS (
+      SELECT
+        q.conteudo_id,
+        q.assunto,
+        r.is_correta,
+        ROW_NUMBER() OVER (
+          PARTITION BY q.conteudo_id
+          ORDER BY r.created_at DESC, r.id DESC
+        ) AS posicao
+      FROM respostas_questoes r
+      INNER JOIN questoes q ON q.id = r.questao_id
+      WHERE r.usuario_id = $1
+    )
+    SELECT
+      conteudo_id,
+      assunto,
+      COUNT(*)::int AS respostas,
+      COUNT(*) FILTER (WHERE NOT is_correta)::int AS erros
+    FROM respostas_ordenadas
+    WHERE posicao <= $2 AND assunto IS NOT NULL
+    GROUP BY conteudo_id, assunto
+  `;
+  const result = await db.query(query, [usuarioId, janela]);
+  return result.rows;
+}
+
 module.exports = {
   create,
+  getDesempenhoRecentePorConteudo,
+  getSessoesRecentesPorConteudo,
+  getErrosRecentesPorAssunto,
   findAllByUserId,
   findAllByQuestaoAndUserId,
   getDesempenhoResumo,
