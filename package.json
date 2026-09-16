@@ -1,7 +1,7 @@
 {
   "name": "studyai-backend",
   "version": "1.0.0",
-  "description": "Backend base do projeto StudyAI - Sprint 2",
+  "description": "Backend do StudyAI - estudo ativo com IA para concursos publicos",
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
