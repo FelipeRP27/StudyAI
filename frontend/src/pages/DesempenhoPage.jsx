@@ -6,6 +6,8 @@ import {
   BarChart3,
   CheckCircle2,
   ChevronRight,
+  Compass,
+  NotebookPen,
   Percent,
   XCircle
 } from 'lucide-react';
@@ -84,6 +86,16 @@ function DesempenhoPage() {
           <h1>Seu desempenho</h1>
           <p className="dashboard-copy">
             Estatísticas dos últimos 30 dias com base nas questões que você respondeu.
+          </p>
+          <p className="dashboard-atalhos">
+            <Link to="/plano" className="secondary-button small button-with-spinner">
+              <Compass size={14} />
+              <span>Ver meu plano</span>
+            </Link>
+            <Link to="/erros" className="secondary-button small button-with-spinner">
+              <NotebookPen size={14} />
+              <span>Caderno de erros</span>
+            </Link>
           </p>
         </div>
       </section>

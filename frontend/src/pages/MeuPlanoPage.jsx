@@ -367,7 +367,10 @@ function MeuPlanoPage() {
             <section className="content-card">
               <header className="section-with-legend">
                 <h2>Onde focar agora</h2>
-                <span className="legend muted">ordenado por prioridade</span>
+                <Link to="/erros" className="secondary-button small button-with-spinner">
+                  <NotebookPen size={14} />
+                  <span>Caderno de erros</span>
+                </Link>
               </header>
               <ul className="plano-list">
                 {itens.map((item, indice) => (
