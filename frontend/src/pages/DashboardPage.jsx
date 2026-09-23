@@ -14,9 +14,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { materiaService } from '../services/materiaService';
 import { tarefaService } from '../services/tarefaService';
 import { desempenhoService } from '../services/desempenhoService';
+import { painelService } from '../services/painelService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import { SkeletonList } from '../shared/Skeleton';
 import { getMateriaStripe } from '../shared/colorPalette';
+import PainelOrientacao from '../shared/PainelOrientacao';
 
 function DashboardPage() {
   useDocumentTitle('Dashboard');
@@ -25,6 +27,7 @@ function DashboardPage() {
   const [materias, setMaterias] = useState([]);
   const [tarefas, setTarefas] = useState([]);
   const [desempenho, setDesempenho] = useState(null);
+  const [painel, setPainel] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -36,14 +39,16 @@ function DashboardPage() {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const [materiasData, tarefasData, desempenhoData] = await Promise.all([
+      const [materiasData, tarefasData, desempenhoData, painelData] = await Promise.all([
         materiaService.listMaterias(),
         tarefaService.listAll().catch(() => []),
-        desempenhoService.get({ dias: 30 }).catch(() => null)
+        desempenhoService.get({ dias: 30 }).catch(() => null),
+        painelService.get().catch(() => null)
       ]);
       setMaterias(materiasData);
       setTarefas(tarefasData);
       setDesempenho(desempenhoData);
+      setPainel(painelData);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -124,6 +129,8 @@ function DashboardPage() {
         </div>
         <div className="dashboard-hero-decoration" aria-hidden="true" />
       </section>
+
+      {materias.length > 0 ? <PainelOrientacao painel={painel} isLoading={isLoading} /> : null}
 
       <section className="content-grid">
         <article className="content-card">
