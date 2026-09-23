@@ -38,8 +38,15 @@ async function desmarcarRevisado({ flashcardId, usuarioId }) {
 async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 8 }) {
   const conteudo = await conteudoOwnershipService.ensureConteudoOwnership(conteudoId, usuarioId);
 
-  const { systemInstruction, prompt } = flashcardsPrompt(conteudo, quantidade);
-  const payload = await iaService.generateJson({ systemInstruction, prompt });
+  const anteriores = await flashcardRepository.findAllByConteudoId(conteudoId, usuarioId);
+  const existentes = anteriores.map((flashcard) => flashcard.frente);
+
+  const { systemInstruction, prompt } = flashcardsPrompt(conteudo, quantidade, { existentes });
+  const payload = await iaService.generateJson({
+    systemInstruction,
+    prompt,
+    temperature: existentes.length > 0 ? iaService.TEMPERATURA_REGERACAO : undefined
+  });
 
   if (!payload || !Array.isArray(payload.flashcards) || payload.flashcards.length === 0) {
     throw new AppError('IA nao retornou flashcards validos', 502);

@@ -8,6 +8,7 @@ jest.mock('../services/conteudoOwnershipService', () => ({
 }));
 
 jest.mock('../services/iaService', () => ({
+  ...jest.requireActual('../services/iaService'),
   generateJson: jest.fn()
 }));
 
@@ -24,6 +25,22 @@ describe('resumoService.generateFromConteudo', () => {
       titulo: 'Principios',
       texto: 'conteudo teorico'
     });
+    resumoRepository.findAllByConteudoId.mockResolvedValue([]);
+  });
+
+  test('ao regerar, envia os resumos anteriores no prompt e aumenta a temperatura', async () => {
+    resumoRepository.findAllByConteudoId.mockResolvedValue([
+      { id: 1, texto: 'resumo anterior sobre legalidade' }
+    ]);
+    iaService.generateJson.mockResolvedValue({ resumo: 'resumo novo' });
+    resumoRepository.create.mockResolvedValue({ id: 11, conteudo_id: 1, texto: 'resumo novo' });
+
+    await resumoService.generateFromConteudo({ conteudoId: 1, usuarioId: 2 });
+
+    const chamada = iaService.generateJson.mock.calls[0][0];
+    expect(chamada.prompt).toContain('resumo anterior sobre legalidade');
+    expect(chamada.prompt).toContain('geracao numero 2');
+    expect(chamada.temperature).toBe(0.9);
   });
 
   test('gera resumo via IA e persiste', async () => {

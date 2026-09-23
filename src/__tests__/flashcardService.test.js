@@ -8,6 +8,7 @@ jest.mock('../services/conteudoOwnershipService', () => ({
 }));
 
 jest.mock('../services/iaService', () => ({
+  ...jest.requireActual('../services/iaService'),
   generateJson: jest.fn()
 }));
 
@@ -19,6 +20,7 @@ const AppError = require('../config/appError');
 
 describe('flashcardService.generateFromConteudo', () => {
   beforeEach(() => {
+    flashcardRepository.findAllByConteudoId.mockResolvedValue([]);
     conteudoOwnershipService.ensureConteudoOwnership.mockResolvedValue({
       id: 1,
       titulo: 'Atos Administrativos',
@@ -35,6 +37,22 @@ describe('flashcardService.generateFromConteudo', () => {
         created_at: '2026-04-22T00:00:00Z'
       })
     );
+  });
+
+  test('ao regerar, envia as perguntas anteriores no prompt e aumenta a temperatura', async () => {
+    flashcardRepository.findAllByConteudoId.mockResolvedValue([
+      { id: 1, frente: 'O que e legalidade?', verso: 'Agir conforme a lei' }
+    ]);
+    iaService.generateJson.mockResolvedValue({
+      flashcards: [{ frente: 'Pergunta nova', verso: 'Resposta nova' }]
+    });
+    flashcardRepository.create.mockResolvedValue({ id: 5, conteudo_id: 1, frente: 'Pergunta nova', verso: 'Resposta nova' });
+
+    await flashcardService.generateFromConteudo({ conteudoId: 1, usuarioId: 2 });
+
+    const chamada = iaService.generateJson.mock.calls[0][0];
+    expect(chamada.prompt).toContain('O que e legalidade?');
+    expect(chamada.temperature).toBe(0.9);
   });
 
   test('persiste apenas flashcards com frente e verso nao vazios', async () => {

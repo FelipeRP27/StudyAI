@@ -23,8 +23,15 @@ async function listByConteudo(input) {
 async function generateFromConteudo({ conteudoId, usuarioId }) {
   const conteudo = await conteudoOwnershipService.ensureConteudoOwnership(conteudoId, usuarioId);
 
-  const { systemInstruction, prompt } = resumoPrompt(conteudo);
-  const payload = await iaService.generateJson({ systemInstruction, prompt });
+  const anteriores = await resumoRepository.findAllByConteudoId(conteudoId);
+  const existentes = anteriores.map((item) => item.texto);
+
+  const { systemInstruction, prompt } = resumoPrompt(conteudo, { existentes });
+  const payload = await iaService.generateJson({
+    systemInstruction,
+    prompt,
+    temperature: existentes.length > 0 ? iaService.TEMPERATURA_REGERACAO : undefined
+  });
 
   if (!payload || typeof payload.resumo !== 'string' || !payload.resumo.trim()) {
     throw new AppError('IA nao retornou um resumo valido', 502);

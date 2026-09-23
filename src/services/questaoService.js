@@ -86,8 +86,15 @@ function validateQuestoesPayload(payload) {
 async function generateFromConteudo({ conteudoId, usuarioId, quantidade = 5 }) {
   const conteudo = await conteudoOwnershipService.ensureConteudoOwnership(conteudoId, usuarioId);
 
-  const { systemInstruction, prompt } = questoesPrompt(conteudo, quantidade);
-  const payload = await iaService.generateJson({ systemInstruction, prompt });
+  const anteriores = await questaoRepository.findAllByConteudoId(conteudoId);
+  const existentes = anteriores.map((questao) => questao.enunciado);
+
+  const { systemInstruction, prompt } = questoesPrompt(conteudo, quantidade, { existentes });
+  const payload = await iaService.generateJson({
+    systemInstruction,
+    prompt,
+    temperature: existentes.length > 0 ? iaService.TEMPERATURA_REGERACAO : undefined
+  });
   const questoesValidas = validateQuestoesPayload(payload);
 
   if (questoesValidas.length === 0) {
