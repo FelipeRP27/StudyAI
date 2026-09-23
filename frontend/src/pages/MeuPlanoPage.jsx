@@ -6,6 +6,9 @@ import {
   BookOpen,
   CircleAlert,
   Compass,
+  FileText,
+  Layers,
+  Lightbulb,
   ListChecks,
   Minus,
   NotebookPen,
@@ -25,6 +28,14 @@ const PRIORIDADES = {
   media: { rotulo: 'Prioridade média', classe: 'media' },
   baixa: { rotulo: 'Prioridade baixa', classe: 'baixa' },
   sem_dados: { rotulo: 'Sem dados suficientes', classe: 'sem-dados' }
+};
+
+const ICONE_ACAO = {
+  erros: NotebookPen,
+  pontos_chave: Lightbulb,
+  resumo: FileText,
+  flashcards: Layers,
+  questoes: ListChecks
 };
 
 const TENDENCIAS = {
@@ -213,30 +224,21 @@ function PlanoItem({ item, ordem }) {
       </p>
 
       <footer className="plano-item-acoes">
-        <Link to={`/conteudos/${item.conteudo_id}`} className="secondary-button small">
-          <BookOpen size={14} />
-          <span>Revisar conteúdo</span>
-        </Link>
-        {item.questoes_pendentes > 0 || item.questoes_erro_recorrente > 0 ? (
-          <Link
-            to={`/erros?conteudo_id=${item.conteudo_id}${item.questoes_pendentes > 0 ? '&status=pendente' : ''}`}
-            className="secondary-button small button-with-spinner"
-          >
-            <NotebookPen size={14} />
-            <span>
-              {item.questoes_pendentes > 0
-                ? `Refazer ${item.questoes_pendentes} ${plural(item.questoes_pendentes, 'erro', 'erros')}`
-                : 'Ver erros'}
-            </span>
-          </Link>
-        ) : null}
-        <Link
-          to={`/conteudos/${item.conteudo_id}/questoes`}
-          className="primary-button small button-with-spinner"
-        >
-          <span>Responder questões</span>
-          <ArrowRight size={14} />
-        </Link>
+        {item.acoes.map((acao, indice) => {
+          const Icone = ICONE_ACAO[acao.tipo] || BookOpen;
+          const ehPrincipal = indice === item.acoes.length - 1;
+          return (
+            <Link
+              key={acao.rota}
+              to={acao.rota}
+              className={`${ehPrincipal ? 'primary-button' : 'secondary-button'} small button-with-spinner`}
+            >
+              {ehPrincipal ? null : <Icone size={14} />}
+              <span>{acao.rotulo}</span>
+              {ehPrincipal ? <ArrowRight size={14} /> : null}
+            </Link>
+          );
+        })}
       </footer>
     </li>
   );
@@ -323,7 +325,10 @@ function MeuPlanoPage() {
               <Compass size={40} className="empty-state-svg" aria-hidden="true" />
               <strong>Ainda precisamos conhecer melhor seu desempenho</strong>
               <p className="muted">{plano.mensagem}</p>
-              <Link to="/dashboard" className="primary-button small button-with-spinner">
+              <Link
+                to={plano.acao_inicial_rota || '/plano/diagnostico'}
+                className="primary-button small button-with-spinner"
+              >
                 <span>{plano.acao_inicial || 'Responder questões'}</span>
                 <ArrowRight size={14} />
               </Link>
