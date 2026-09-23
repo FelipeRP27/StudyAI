@@ -5,10 +5,12 @@ import Skeleton from '../shared/Skeleton';
 import { conteudoService } from '../services/conteudoService';
 import { flashcardService } from '../services/flashcardService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import { useRegistroDeEstudo } from '../shared/useRegistroDeEstudo';
 
 function FlashcardsPage() {
   useDocumentTitle('Flashcards');
   const { conteudoId } = useParams();
+  useRegistroDeEstudo(conteudoId, 'flashcards');
 
   const [conteudo, setConteudo] = useState(null);
   const [flashcards, setFlashcards] = useState([]);

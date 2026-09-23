@@ -8,6 +8,7 @@ jest.mock('../services/conteudoOwnershipService', () => ({
 }));
 
 jest.mock('../services/iaService', () => ({
+  ...jest.requireActual('../services/iaService'),
   generateJson: jest.fn()
 }));
 
@@ -19,6 +20,7 @@ const AppError = require('../config/appError');
 
 describe('pontoChaveService.generateFromConteudo', () => {
   beforeEach(() => {
+    pontoChaveRepository.findAllByConteudoId.mockResolvedValue([]);
     conteudoOwnershipService.ensureConteudoOwnership.mockResolvedValue({
       id: 1,
       titulo: 'Principios',
@@ -34,6 +36,18 @@ describe('pontoChaveService.generateFromConteudo', () => {
         created_at: '2026-04-22T00:00:00Z'
       })
     );
+  });
+
+  test('ao regerar, envia os pontos anteriores no prompt e aumenta a temperatura', async () => {
+    pontoChaveRepository.findAllByConteudoId.mockResolvedValue([{ id: 1, texto: 'LIMPE no art. 37' }]);
+    iaService.generateJson.mockResolvedValue({ pontos_chave: ['ponto novo'] });
+    pontoChaveRepository.create.mockResolvedValue({ id: 9, conteudo_id: 1, texto: 'ponto novo' });
+
+    await pontoChaveService.generateFromConteudo({ conteudoId: 1, usuarioId: 2 });
+
+    const chamada = iaService.generateJson.mock.calls[0][0];
+    expect(chamada.prompt).toContain('LIMPE no art. 37');
+    expect(chamada.temperature).toBe(0.9);
   });
 
   test('persiste apenas pontos-chave nao vazios e faz trim', async () => {

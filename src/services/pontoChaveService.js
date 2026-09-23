@@ -23,8 +23,15 @@ async function listByConteudo(input) {
 async function generateFromConteudo({ conteudoId, usuarioId }) {
   const conteudo = await conteudoOwnershipService.ensureConteudoOwnership(conteudoId, usuarioId);
 
-  const { systemInstruction, prompt } = pontosChavePrompt(conteudo);
-  const payload = await iaService.generateJson({ systemInstruction, prompt });
+  const anteriores = await pontoChaveRepository.findAllByConteudoId(conteudoId);
+  const existentes = anteriores.map((item) => item.texto);
+
+  const { systemInstruction, prompt } = pontosChavePrompt(conteudo, { existentes });
+  const payload = await iaService.generateJson({
+    systemInstruction,
+    prompt,
+    temperature: existentes.length > 0 ? iaService.TEMPERATURA_REGERACAO : undefined
+  });
 
   if (!payload || !Array.isArray(payload.pontos_chave) || payload.pontos_chave.length === 0) {
     throw new AppError('IA nao retornou pontos-chave validos', 502);

@@ -7,5 +7,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.get('/', planoEstudoController.get);
+router.get('/sessao', planoEstudoController.getSessao);
+router.get('/diagnostico', planoEstudoController.getDiagnostico);
 
 module.exports = router;

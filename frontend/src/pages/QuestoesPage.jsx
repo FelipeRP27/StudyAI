@@ -6,10 +6,12 @@ import QuestaoQuiz, { AssuntoTag } from '../shared/QuestaoQuiz';
 import { conteudoService } from '../services/conteudoService';
 import { questaoService } from '../services/questaoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import { useRegistroDeEstudo } from '../shared/useRegistroDeEstudo';
 
 function QuestoesPage() {
   useDocumentTitle('Resolver questões');
   const { conteudoId } = useParams();
+  useRegistroDeEstudo(conteudoId, 'questoes');
 
   const [conteudo, setConteudo] = useState(null);
   const [questoes, setQuestoes] = useState([]);

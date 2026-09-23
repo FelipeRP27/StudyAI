@@ -10,6 +10,7 @@ jest.mock('../services/conteudoOwnershipService', () => ({
 }));
 
 jest.mock('../services/iaService', () => ({
+  ...jest.requireActual('../services/iaService'),
   generateJson: jest.fn()
 }));
 
@@ -21,6 +22,7 @@ const AppError = require('../config/appError');
 
 describe('questaoService.generateFromConteudo', () => {
   beforeEach(() => {
+    questaoRepository.findAllByConteudoId.mockResolvedValue([]);
     conteudoOwnershipService.ensureConteudoOwnership.mockResolvedValue({
       id: 1,
       titulo: 'Direito Adm',
@@ -49,6 +51,30 @@ describe('questaoService.generateFromConteudo', () => {
         created_at: '2026-04-22T00:00:00Z'
       })
     );
+  });
+
+  test('ao regerar, envia os enunciados anteriores no prompt e aumenta a temperatura', async () => {
+    questaoRepository.findAllByConteudoId.mockResolvedValue([
+      { id: 1, enunciado: 'Enunciado ja existente sobre LIMPE' }
+    ]);
+    iaService.generateJson.mockResolvedValue({
+      questoes: [
+        {
+          enunciado: 'Enunciado inedito',
+          alternativas: [
+            { texto: 'a', is_correta: true },
+            { texto: 'b', is_correta: false }
+          ]
+        }
+      ]
+    });
+
+    await questaoService.generateFromConteudo({ conteudoId: 1, usuarioId: 2 });
+
+    const chamada = iaService.generateJson.mock.calls[0][0];
+    expect(chamada.prompt).toContain('Enunciado ja existente sobre LIMPE');
+    expect(chamada.prompt).toContain('INEDITAS');
+    expect(chamada.temperature).toBe(0.9);
   });
 
   test('persiste apenas questoes com >= 2 alternativas e exatamente 1 correta', async () => {

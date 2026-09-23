@@ -11,8 +11,13 @@ jest.mock('../repositories/cadernoErrosRepository', () => ({
   getResumoErrosPorConteudo: jest.fn()
 }));
 
+jest.mock('../repositories/atividadeEstudoRepository', () => ({
+  findUltimaPorConteudo: jest.fn()
+}));
+
 const respostaRepository = require('../repositories/respostaRepository');
 const cadernoErrosRepository = require('../repositories/cadernoErrosRepository');
+const atividadeEstudoRepository = require('../repositories/atividadeEstudoRepository');
 const planoEstudoService = require('../services/planoEstudoService');
 
 describe('planoEstudoService.getPlanoEstudo', () => {
@@ -23,6 +28,7 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     respostaRepository.getSessoesRecentesPorConteudo.mockResolvedValue([]);
     respostaRepository.getErrosRecentesPorAssunto.mockResolvedValue([]);
     cadernoErrosRepository.getResumoErrosPorConteudo.mockResolvedValue([]);
+    atividadeEstudoRepository.findUltimaPorConteudo.mockResolvedValue([]);
   });
 
   test('monta o plano priorizado com justificativa e recomendacao por conteudo', async () => {
@@ -69,6 +75,11 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     expect(prioritario.recomendacao).toContain('10 questões');
     expect(output.itens[1].prioridade).toBe('baixa');
     expect(output.itens[1].justificativa).toContain('acima da sua média geral de 74%');
+    expect(output.itens[1].acoes.map((acao) => acao.tipo)).toEqual([
+      'resumo',
+      'flashcards',
+      'questoes'
+    ]);
   });
 
   test('devolve dados_insuficientes com acao inicial quando ha poucas respostas', async () => {
@@ -93,6 +104,7 @@ describe('planoEstudoService.getPlanoEstudo', () => {
 
     expect(output.status).toBe('dados_insuficientes');
     expect(output.acao_inicial).toBe('Responder questões de diagnóstico');
+    expect(output.acao_inicial_rota).toBe('/plano/diagnostico');
     expect(output.mensagem).toContain('Ainda precisamos conhecer melhor seu desempenho');
     expect(output.itens[0].prioridade).toBe('sem_dados');
   });
@@ -175,6 +187,26 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     expect(item.justificativa).toContain('2 questões foram erradas mais de uma vez.');
     expect(item.recomendacao).toContain('10 questões');
     expect(item.recomendacao).toContain('Comece refazendo os 3 erros pendentes no caderno de erros.');
+    expect(item.acoes).toEqual([
+      {
+        tipo: 'erros',
+        rotulo: 'Refazer 3 erros',
+        rota: '/erros?conteudo_id=2&status=pendente',
+        quantidade: 3
+      },
+      {
+        tipo: 'pontos_chave',
+        rotulo: 'Revisar pontos-chave',
+        rota: '/conteudos/2?aba=pontos_chave',
+        quantidade: null
+      },
+      {
+        tipo: 'questoes',
+        rotulo: 'Responder 10 questões',
+        rota: '/plano/sessao?conteudo_id=2&quantidade=10',
+        quantidade: 10
+      }
+    ]);
 
     expect(output.resumo.questoes_pendentes).toBe(3);
     expect(output.diagnostico_materias.materias_atencao).toEqual([
@@ -183,6 +215,39 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     expect(output.diagnostico_materias.materias_fortes).toEqual([
       expect.objectContaining({ materia_nome: 'Direito Constitucional', taxa_acerto: 92.5 })
     ]);
+  });
+
+  test('usa a atividade de estudo como recencia quando ela e mais recente que a resposta', async () => {
+    const vinteDiasAtras = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString();
+    const doisDiasAtras = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+
+    respostaRepository.getDesempenhoResumo.mockResolvedValue({
+      total_respostas: 20,
+      total_acertos: 13,
+      total_erros: 7
+    });
+    respostaRepository.getDesempenhoPorConteudo.mockResolvedValue([
+      {
+        conteudo_id: 3,
+        conteudo_titulo: 'Licitacoes',
+        materia_id: 10,
+        materia_nome: 'Direito Administrativo',
+        total_respostas: 20,
+        total_acertos: 13,
+        ultima_resposta_em: vinteDiasAtras
+      }
+    ]);
+    atividadeEstudoRepository.findUltimaPorConteudo.mockResolvedValue([
+      { conteudo_id: 3, ultima_atividade_em: doisDiasAtras, total_atividades: 4 }
+    ]);
+
+    const output = await planoEstudoService.getPlanoEstudo({ usuarioId: 1 });
+    const [item] = output.itens;
+
+    expect(item.dias_sem_responder).toBe(20);
+    expect(item.dias_sem_estudar).toBe(2);
+    expect(item.justificativa).toContain('Você estudou este conteúdo pela última vez há 2 dias.');
+    expect(item.justificativa).not.toContain('A última resposta foi há 20 dias.');
   });
 
   test('recomenda revisao por tempo quando bom desempenho fica muito tempo sem pratica', async () => {

@@ -112,6 +112,11 @@ function classificarPrioridade({ totalRespostas, taxaAcerto, pontuacao }) {
   return 'baixa';
 }
 
+function menorDiferencaDeDias(...valores) {
+  const validos = valores.filter((valor) => valor !== null && valor !== undefined);
+  return validos.length === 0 ? null : Math.min(...validos);
+}
+
 function ordenarPorRelevancia(itens) {
   return [...itens].sort((a, b) => {
     const pesoA = PESO_PRIORIDADE[a.prioridade];
@@ -119,7 +124,7 @@ function ordenarPorRelevancia(itens) {
     if (pesoA !== pesoB) return pesoA - pesoB;
     if (a.pontuacao !== b.pontuacao) return b.pontuacao - a.pontuacao;
     if (a.taxa_acerto !== b.taxa_acerto) return a.taxa_acerto - b.taxa_acerto;
-    return (b.dias_sem_responder || 0) - (a.dias_sem_responder || 0);
+    return (b.dias_sem_estudar || 0) - (a.dias_sem_estudar || 0);
   });
 }
 
@@ -127,8 +132,16 @@ function indexarPorConteudo(linhas = []) {
   return new Map(linhas.map((linha) => [linha.conteudo_id, linha]));
 }
 
-function combinarDadosPorConteudo({ porConteudo, recentes = [], sessoes = [], assuntos = [], erros = [] }) {
+function combinarDadosPorConteudo({
+  porConteudo,
+  recentes = [],
+  sessoes = [],
+  assuntos = [],
+  erros = [],
+  atividades = []
+}) {
   const recentesPorConteudo = indexarPorConteudo(recentes);
+  const atividadesPorConteudo = indexarPorConteudo(atividades);
   const sessoesPorConteudo = indexarPorConteudo(sessoes);
   const errosPorConteudo = indexarPorConteudo(erros);
   const assuntosPorConteudo = new Map();
@@ -143,9 +156,11 @@ function combinarDadosPorConteudo({ porConteudo, recentes = [], sessoes = [], as
     const recente = recentesPorConteudo.get(linha.conteudo_id);
     const sessao = sessoesPorConteudo.get(linha.conteudo_id);
     const erro = errosPorConteudo.get(linha.conteudo_id);
+    const atividade = atividadesPorConteudo.get(linha.conteudo_id);
 
     return {
       ...linha,
+      ultima_atividade_em: atividade?.ultima_atividade_em ?? null,
       respostas_recentes: recente?.respostas_recentes,
       acertos_recentes: recente?.acertos_recentes,
       sessoes_recentes: sessao?.sessoes_recentes,
@@ -165,6 +180,8 @@ function analisarConteudo(linha, agora) {
   const respostasRecentes = temDadosRecentes ? linha.respostas_recentes : 0;
   const acertosRecentes = temDadosRecentes ? linha.acertos_recentes || 0 : 0;
   const diasSemResponder = calcularDiasSemResponder(linha.ultima_resposta_em, agora);
+  const diasSemAtividade = calcularDiasSemResponder(linha.ultima_atividade_em, agora);
+  const diasSemEstudar = menorDiferencaDeDias(diasSemResponder, diasSemAtividade);
   const sessoesRecentes = linha.sessoes_recentes || 0;
   const sessoesComErro = linha.sessoes_com_erro || 0;
   const questoesErroRecorrente = linha.questoes_erro_recorrente || 0;
@@ -178,7 +195,7 @@ function analisarConteudo(linha, agora) {
     tendencia,
     sessoesRecentes,
     sessoesComErro,
-    diasSemResponder,
+    diasSemResponder: diasSemEstudar,
     questoesErroRecorrente
   });
 
@@ -199,6 +216,8 @@ function analisarConteudo(linha, agora) {
     questoes_pendentes: linha.questoes_pendentes || 0,
     assuntos_dificeis: identificarAssuntosDificeis(linha.assuntos),
     dias_sem_responder: diasSemResponder,
+    dias_sem_atividade: diasSemAtividade,
+    dias_sem_estudar: diasSemEstudar,
     pontuacao,
     prioridade: classificarPrioridade({ totalRespostas, taxaAcerto, pontuacao })
   };
@@ -258,6 +277,7 @@ module.exports = {
   calcularPontuacao,
   classificarPrioridade,
   calcularDiasSemResponder,
+  menorDiferencaDeDias,
   identificarAssuntosDificeis,
   combinarDadosPorConteudo,
   analisarConteudos,

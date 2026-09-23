@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { respostaService } from '../services/respostaService';
 
-function QuestaoQuiz({ questoes, renderContexto, renderResultado }) {
+function QuestaoQuiz({ questoes, renderContexto, renderResultado, onConcluir }) {
   const [indice, setIndice] = useState(0);
   const [escolhas, setEscolhas] = useState({});
   const [feedbacks, setFeedbacks] = useState({});
@@ -56,6 +56,7 @@ function QuestaoQuiz({ questoes, renderContexto, renderResultado }) {
       setIndice(indice + 1);
     } else {
       setMostrarResultado(true);
+      onConcluir?.({ totalAcertos, total: questoes.length });
     }
   };
 

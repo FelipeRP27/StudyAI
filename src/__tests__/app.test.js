@@ -27,6 +27,38 @@ describe('app', () => {
     expect(response.status).toBe(401);
   });
 
+  it('exige autenticacao no painel de orientacao', async () => {
+    const response = await request(app).get('/api/v1/painel');
+
+    expect(response.status).toBe(401);
+  });
+
+  it('valida a sessao de questoes antes de consultar o banco', async () => {
+    const semConteudo = await request(app)
+      .get('/api/v1/plano-estudo/sessao')
+      .set('Authorization', `Bearer ${tokenDeTeste()}`);
+
+    expect(semConteudo.status).toBe(400);
+    expect(semConteudo.body.message).toContain('conteudo_id');
+
+    const quantidadeInvalida = await request(app)
+      .get('/api/v1/plano-estudo/sessao?conteudo_id=1&quantidade=99')
+      .set('Authorization', `Bearer ${tokenDeTeste()}`);
+
+    expect(quantidadeInvalida.status).toBe(400);
+    expect(quantidadeInvalida.body.message).toContain('quantidade');
+  });
+
+  it('valida o tipo da atividade de estudo', async () => {
+    const response = await request(app)
+      .post('/api/v1/atividades')
+      .set('Authorization', `Bearer ${tokenDeTeste()}`)
+      .send({ conteudo_id: 1, tipo: 'simulado' });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toContain('tipo must be one of');
+  });
+
   it('valida os filtros do caderno de erros antes de consultar o banco', async () => {
     const response = await request(app)
       .get('/api/v1/caderno-erros?status=arquivado')

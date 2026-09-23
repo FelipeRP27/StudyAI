@@ -8,6 +8,8 @@ import QuestoesPage from '../pages/QuestoesPage';
 import FlashcardsPage from '../pages/FlashcardsPage';
 import MeuPlanoPage from '../pages/MeuPlanoPage';
 import CadernoErrosPage from '../pages/CadernoErrosPage';
+import SessaoEstudoPage from '../pages/SessaoEstudoPage';
+import DiagnosticoPage from '../pages/DiagnosticoPage';
 import DesempenhoPage from '../pages/DesempenhoPage';
 import DesempenhoMateriaPage from '../pages/DesempenhoMateriaPage';
 import TarefasPage from '../pages/TarefasPage';
@@ -78,6 +80,22 @@ export function AppRouter() {
         element={
           <ProtectedRoute>
             <MeuPlanoPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plano/sessao"
+        element={
+          <ProtectedRoute>
+            <SessaoEstudoPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/plano/diagnostico"
+        element={
+          <ProtectedRoute>
+            <DiagnosticoPage />
           </ProtectedRoute>
         }
       />
