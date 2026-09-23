@@ -3,14 +3,14 @@ const db = require('../config/database');
 async function registrar({ usuarioId, conteudoId, tipo, minutosEntreRegistros }) {
   const query = `
     INSERT INTO atividades_estudo (usuario_id, conteudo_id, tipo)
-    SELECT $1, $2, $3
+    SELECT $1::int, $2::int, $3::varchar
     WHERE NOT EXISTS (
       SELECT 1
       FROM atividades_estudo
-      WHERE usuario_id = $1
-        AND conteudo_id = $2
-        AND tipo = $3
-        AND created_at >= NOW() - ($4 || ' minutes')::interval
+      WHERE usuario_id = $1::int
+        AND conteudo_id = $2::int
+        AND tipo = $3::varchar
+        AND created_at >= NOW() - ($4::int || ' minutes')::interval
     )
     RETURNING id, usuario_id, conteudo_id, tipo, created_at
   `;
