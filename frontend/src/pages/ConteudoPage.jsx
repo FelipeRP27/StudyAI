@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, BookOpenCheck, FileText, Layers, Lightbulb, Sparkles } from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
@@ -11,6 +11,7 @@ import { useDocumentTitle } from '../shared/useDocumentTitle';
 import CopyButton from '../shared/CopyButton';
 import Spinner from '../shared/Spinner';
 import Skeleton, { SkeletonText } from '../shared/Skeleton';
+import { useRegistroDeEstudo } from '../shared/useRegistroDeEstudo';
 
 const STAGES = ['resumo', 'pontos_chave', 'questoes', 'flashcards'];
 
@@ -199,7 +200,18 @@ function ConteudoPage() {
   const [gerarError, setGerarError] = useState('');
   const [etapasStatus, setEtapasStatus] = useState({});
 
-  const [abaAtiva, setAbaAtiva] = useState('resumo');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const abaDaUrl = searchParams.get('aba');
+  const abaAtiva = ABAS.some((aba) => aba.id === abaDaUrl) ? abaDaUrl : 'resumo';
+
+  const trocarAba = (id) => {
+    const proximos = new URLSearchParams(searchParams);
+    proximos.set('aba', id);
+    setSearchParams(proximos, { replace: true });
+  };
+
+  useRegistroDeEstudo(conteudoId, 'conteudo');
+  useRegistroDeEstudo(conteudoId, abaAtiva, { ativo: Boolean(abaDaUrl) });
 
   const timersRef = useRef([]);
   const clearTimers = () => {
@@ -390,7 +402,7 @@ function ConteudoPage() {
                   key={aba.id}
                   type="button"
                   className={`tab ${abaAtiva === aba.id ? 'active' : ''}`}
-                  onClick={() => setAbaAtiva(aba.id)}
+                  onClick={() => trocarAba(aba.id)}
                 >
                   {aba.titulo}
                   <span className="tab-count">{contagens[aba.id]}</span>

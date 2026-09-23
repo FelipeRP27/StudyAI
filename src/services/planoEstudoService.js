@@ -1,5 +1,6 @@
 const respostaRepository = require('../repositories/respostaRepository');
 const cadernoErrosRepository = require('../repositories/cadernoErrosRepository');
+const atividadeEstudoRepository = require('../repositories/atividadeEstudoRepository');
 const analiseDesempenhoService = require('./analiseDesempenhoService');
 const { toPlanoEstudoResponseDto } = require('../dtos/planoEstudoOutputDto');
 
@@ -73,7 +74,14 @@ function montarJustificativa(item, taxaGeral) {
     );
   }
 
-  if (item.dias_sem_responder !== null && item.dias_sem_responder > 0) {
+  if (
+    item.dias_sem_atividade !== null &&
+    item.dias_sem_atividade === item.dias_sem_estudar &&
+    item.dias_sem_atividade > 0
+  ) {
+    const dias = plural(item.dias_sem_atividade, 'dia', 'dias');
+    partes.push(`Você estudou este conteúdo pela última vez há ${item.dias_sem_atividade} ${dias}.`);
+  } else if (item.dias_sem_responder !== null && item.dias_sem_responder > 0) {
     const dias = plural(item.dias_sem_responder, 'dia', 'dias');
     partes.push(`A última resposta foi há ${item.dias_sem_responder} ${dias}.`);
   }
@@ -95,7 +103,7 @@ function montarRecomendacao(item) {
 }
 
 async function getPlanoEstudo({ usuarioId }) {
-  const [resumo, porConteudo, porMateria, recentes, sessoes, assuntos, erros] = await Promise.all([
+  const [resumo, porConteudo, porMateria, recentes, sessoes, assuntos, erros, atividades] = await Promise.all([
     respostaRepository.getDesempenhoResumo(usuarioId),
     respostaRepository.getDesempenhoPorConteudo(usuarioId),
     respostaRepository.getDesempenhoPorMateria(usuarioId),
@@ -111,7 +119,8 @@ async function getPlanoEstudo({ usuarioId }) {
     cadernoErrosRepository.getResumoErrosPorConteudo(
       usuarioId,
       analiseDesempenhoService.MINIMO_ERROS_RECORRENTE
-    )
+    ),
+    atividadeEstudoRepository.findUltimaPorConteudo(usuarioId)
   ]);
 
   const linhas = analiseDesempenhoService.combinarDadosPorConteudo({
@@ -119,7 +128,8 @@ async function getPlanoEstudo({ usuarioId }) {
     recentes,
     sessoes,
     assuntos,
-    erros
+    erros,
+    atividades
   });
   const itensAnalisados = analiseDesempenhoService.analisarConteudos(linhas);
   const taxaGeral = analiseDesempenhoService.calcularTaxa(

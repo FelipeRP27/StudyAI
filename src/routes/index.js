@@ -1,5 +1,6 @@
 const express = require('express');
 const alternativaRoutes = require('./alternativaRoutes');
+const atividadeEstudoRoutes = require('./atividadeEstudoRoutes');
 const authRoutes = require('./authRoutes');
 const cadernoErrosRoutes = require('./cadernoErrosRoutes');
 const conteudoRoutes = require('./conteudoRoutes');
@@ -18,6 +19,7 @@ const tarefaRoutes = require('./tarefaRoutes');
 const router = express.Router();
 
 router.use('/alternativas', alternativaRoutes);
+router.use('/atividades', atividadeEstudoRoutes);
 router.use('/auth', authRoutes);
 router.use('/caderno-erros', cadernoErrosRoutes);
 router.use('/conteudos', conteudoRoutes);

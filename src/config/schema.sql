@@ -210,3 +210,24 @@ ALTER TABLE questoes ADD COLUMN IF NOT EXISTS assunto VARCHAR(120);
 
 CREATE INDEX IF NOT EXISTS idx_respostas_usuario_questao_data
     ON respostas_questoes (usuario_id, questao_id, created_at);
+
+CREATE TABLE IF NOT EXISTS atividades_estudo (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL,
+    conteudo_id INTEGER NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_atividades_usuario
+        FOREIGN KEY (usuario_id)
+        REFERENCES usuarios (id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_atividades_conteudo
+        FOREIGN KEY (conteudo_id)
+        REFERENCES conteudos (id)
+        ON DELETE CASCADE,
+    CONSTRAINT chk_atividades_tipo
+        CHECK (tipo IN ('conteudo', 'resumo', 'pontos_chave', 'flashcards', 'questoes'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_atividades_usuario_conteudo
+    ON atividades_estudo (usuario_id, conteudo_id, created_at);

@@ -22,6 +22,7 @@ function toItemDto(item) {
     pontuacao: item.pontuacao ?? null,
     prioridade: item.prioridade,
     dias_sem_responder: item.dias_sem_responder,
+    dias_sem_estudar: item.dias_sem_estudar ?? item.dias_sem_responder,
     justificativa: item.justificativa,
     recomendacao: item.recomendacao
   };
