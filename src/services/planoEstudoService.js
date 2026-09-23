@@ -5,6 +5,12 @@ const analiseDesempenhoService = require('./analiseDesempenhoService');
 const { toPlanoEstudoResponseDto } = require('../dtos/planoEstudoOutputDto');
 
 const DIFERENCA_ACIMA_DA_MEDIA = 5;
+const QUESTOES_RECOMENDADAS = {
+  alta: 10,
+  media: 5,
+  baixa: 5,
+  sem_dados: 5
+};
 
 const RECOMENDACOES = {
   alta: 'Revise os pontos-chave e responda 10 questões deste conteúdo.',
@@ -102,6 +108,54 @@ function montarRecomendacao(item) {
   return `${base} Comece refazendo ${erros} no caderno de erros.`;
 }
 
+function montarAcoes(item) {
+  const acoes = [];
+
+  if (item.questoes_pendentes > 0) {
+    acoes.push({
+      tipo: 'erros',
+      rotulo: `Refazer ${item.questoes_pendentes} ${plural(item.questoes_pendentes, 'erro', 'erros')}`,
+      rota: `/erros?conteudo_id=${item.conteudo_id}&status=pendente`,
+      quantidade: item.questoes_pendentes
+    });
+  }
+
+  if (item.prioridade === 'alta') {
+    acoes.push({
+      tipo: 'pontos_chave',
+      rotulo: 'Revisar pontos-chave',
+      rota: `/conteudos/${item.conteudo_id}?aba=pontos_chave`,
+      quantidade: null
+    });
+  } else {
+    acoes.push({
+      tipo: 'resumo',
+      rotulo: 'Revisar resumo',
+      rota: `/conteudos/${item.conteudo_id}?aba=resumo`,
+      quantidade: null
+    });
+  }
+
+  if (item.prioridade === 'baixa') {
+    acoes.push({
+      tipo: 'flashcards',
+      rotulo: 'Revisar flashcards',
+      rota: `/conteudos/${item.conteudo_id}/flashcards`,
+      quantidade: null
+    });
+  }
+
+  const quantidadeQuestoes = QUESTOES_RECOMENDADAS[item.prioridade] || QUESTOES_RECOMENDADAS.media;
+  acoes.push({
+    tipo: 'questoes',
+    rotulo: `Responder ${quantidadeQuestoes} questões`,
+    rota: `/plano/sessao?conteudo_id=${item.conteudo_id}&quantidade=${quantidadeQuestoes}`,
+    quantidade: quantidadeQuestoes
+  });
+
+  return acoes;
+}
+
 async function getPlanoEstudo({ usuarioId }) {
   const [resumo, porConteudo, porMateria, recentes, sessoes, assuntos, erros, atividades] = await Promise.all([
     respostaRepository.getDesempenhoResumo(usuarioId),
@@ -140,7 +194,8 @@ async function getPlanoEstudo({ usuarioId }) {
   const itens = itensAnalisados.map((item) => ({
     ...item,
     justificativa: montarJustificativa(item, taxaGeral),
-    recomendacao: montarRecomendacao(item)
+    recomendacao: montarRecomendacao(item),
+    acoes: montarAcoes(item)
   }));
 
   return toPlanoEstudoResponseDto({

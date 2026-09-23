@@ -89,8 +89,92 @@ async function updateAssunto({ id, assunto }) {
   await db.query(query, [id, assunto]);
 }
 
+const HISTORICO_DO_USUARIO = `
+  WITH historico AS (
+    SELECT
+      r.questao_id,
+      COUNT(*)::int AS total_respostas,
+      COUNT(*) FILTER (WHERE NOT r.is_correta)::int AS total_erros,
+      MAX(r.created_at) AS ultima_resposta_em,
+      (ARRAY_AGG(r.is_correta ORDER BY r.created_at DESC, r.id DESC))[1] AS ultima_resposta_correta
+    FROM respostas_questoes r
+    WHERE r.usuario_id = $1
+    GROUP BY r.questao_id
+  )
+`;
+
+async function findParaSessaoPorConteudo({ conteudoId, usuarioId, limite }) {
+  const query = `
+    ${HISTORICO_DO_USUARIO}
+    SELECT
+      q.id,
+      q.conteudo_id,
+      q.enunciado,
+      q.assunto,
+      q.created_at,
+      COALESCE(h.total_respostas, 0) AS total_respostas,
+      COALESCE(h.total_erros, 0) AS total_erros,
+      h.ultima_resposta_em,
+      h.ultima_resposta_correta
+    FROM questoes q
+    LEFT JOIN historico h ON h.questao_id = q.id
+    WHERE q.conteudo_id = $2
+    ORDER BY
+      (h.questao_id IS NULL) DESC,
+      (h.ultima_resposta_correta IS FALSE) DESC,
+      COALESCE(h.total_erros, 0) DESC,
+      h.ultima_resposta_em ASC NULLS FIRST,
+      q.id ASC
+    LIMIT $3
+  `;
+  const result = await db.query(query, [usuarioId, conteudoId, limite]);
+  return result.rows;
+}
+
+async function findParaDiagnostico({ usuarioId, limite }) {
+  const query = `
+    ${HISTORICO_DO_USUARIO},
+    respostas_por_conteudo AS (
+      SELECT q.conteudo_id, COALESCE(SUM(h.total_respostas), 0)::int AS respostas_do_conteudo
+      FROM questoes q
+      LEFT JOIN historico h ON h.questao_id = q.id
+      GROUP BY q.conteudo_id
+    ),
+    candidatas AS (
+      SELECT
+        q.id,
+        q.conteudo_id,
+        q.enunciado,
+        q.assunto,
+        q.created_at,
+        c.titulo AS conteudo_titulo,
+        m.id AS materia_id,
+        m.nome AS materia_nome,
+        rpc.respostas_do_conteudo,
+        ROW_NUMBER() OVER (
+          PARTITION BY q.conteudo_id
+          ORDER BY (h.questao_id IS NULL) DESC, h.ultima_resposta_em ASC NULLS FIRST, q.id ASC
+        ) AS ordem_no_conteudo
+      FROM questoes q
+      INNER JOIN conteudos c ON c.id = q.conteudo_id AND c.usuario_id = $1
+      INNER JOIN materias m ON m.id = c.materia_id
+      INNER JOIN respostas_por_conteudo rpc ON rpc.conteudo_id = q.conteudo_id
+      LEFT JOIN historico h ON h.questao_id = q.id
+      WHERE h.questao_id IS NULL
+    )
+    SELECT *
+    FROM candidatas
+    ORDER BY ordem_no_conteudo ASC, respostas_do_conteudo ASC, materia_nome ASC, conteudo_id ASC
+    LIMIT $2
+  `;
+  const result = await db.query(query, [usuarioId, limite]);
+  return result.rows;
+}
+
 module.exports = {
   create,
+  findParaSessaoPorConteudo,
+  findParaDiagnostico,
   createAlternativa,
   findAllByConteudoId,
   findAlternativasByQuestaoIds,

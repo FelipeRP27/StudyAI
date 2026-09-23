@@ -24,7 +24,13 @@ function toItemDto(item) {
     dias_sem_responder: item.dias_sem_responder,
     dias_sem_estudar: item.dias_sem_estudar ?? item.dias_sem_responder,
     justificativa: item.justificativa,
-    recomendacao: item.recomendacao
+    recomendacao: item.recomendacao,
+    acoes: (item.acoes || []).map((acao) => ({
+      tipo: acao.tipo,
+      rotulo: acao.rotulo,
+      rota: acao.rota,
+      quantidade: acao.quantidade ?? null
+    }))
   };
 }
 
@@ -54,6 +60,7 @@ function toPlanoEstudoResponseDto({
       ? 'Plano de estudo gerado a partir do seu desempenho registrado.'
       : `Ainda precisamos conhecer melhor seu desempenho. Responda pelo menos ${minimoRespostas} questões para que o StudyAI identifique seus pontos fortes e suas principais dificuldades.`,
     acao_inicial: temDadosSuficientes ? null : 'Responder questões de diagnóstico',
+    acao_inicial_rota: temDadosSuficientes ? null : '/plano/diagnostico',
     resumo: {
       total_respostas: totalRespostas,
       total_acertos: resumo.total_acertos || 0,

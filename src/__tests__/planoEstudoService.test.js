@@ -75,6 +75,11 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     expect(prioritario.recomendacao).toContain('10 questões');
     expect(output.itens[1].prioridade).toBe('baixa');
     expect(output.itens[1].justificativa).toContain('acima da sua média geral de 74%');
+    expect(output.itens[1].acoes.map((acao) => acao.tipo)).toEqual([
+      'resumo',
+      'flashcards',
+      'questoes'
+    ]);
   });
 
   test('devolve dados_insuficientes com acao inicial quando ha poucas respostas', async () => {
@@ -99,6 +104,7 @@ describe('planoEstudoService.getPlanoEstudo', () => {
 
     expect(output.status).toBe('dados_insuficientes');
     expect(output.acao_inicial).toBe('Responder questões de diagnóstico');
+    expect(output.acao_inicial_rota).toBe('/plano/diagnostico');
     expect(output.mensagem).toContain('Ainda precisamos conhecer melhor seu desempenho');
     expect(output.itens[0].prioridade).toBe('sem_dados');
   });
@@ -181,6 +187,26 @@ describe('planoEstudoService.getPlanoEstudo', () => {
     expect(item.justificativa).toContain('2 questões foram erradas mais de uma vez.');
     expect(item.recomendacao).toContain('10 questões');
     expect(item.recomendacao).toContain('Comece refazendo os 3 erros pendentes no caderno de erros.');
+    expect(item.acoes).toEqual([
+      {
+        tipo: 'erros',
+        rotulo: 'Refazer 3 erros',
+        rota: '/erros?conteudo_id=2&status=pendente',
+        quantidade: 3
+      },
+      {
+        tipo: 'pontos_chave',
+        rotulo: 'Revisar pontos-chave',
+        rota: '/conteudos/2?aba=pontos_chave',
+        quantidade: null
+      },
+      {
+        tipo: 'questoes',
+        rotulo: 'Responder 10 questões',
+        rota: '/plano/sessao?conteudo_id=2&quantidade=10',
+        quantidade: 10
+      }
+    ]);
 
     expect(output.resumo.questoes_pendentes).toBe(3);
     expect(output.diagnostico_materias.materias_atencao).toEqual([
