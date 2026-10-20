@@ -7,7 +7,9 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "jest",
-    "classificar-assuntos": "node src/scripts/classificarAssuntos.js"
+    "classificar-assuntos": "node src/scripts/classificarAssuntos.js",
+    "test:integracao": "jest --config jest.integration.config.js",
+    "test:tudo": "npm test && npm run test:integracao"
   },
   "keywords": [
     "studyai",
