@@ -32,8 +32,29 @@ async function findByIdAndUserId(id, usuarioId) {
   return result.rows[0] || null;
 }
 
+async function update({ id, usuarioId, titulo, texto }) {
+  const query = `
+    UPDATE conteudos
+    SET titulo = $1, texto = $2
+    WHERE id = $3 AND usuario_id = $4
+    RETURNING id, titulo, texto, materia_id, usuario_id, created_at
+  `;
+  const result = await db.query(query, [titulo, texto, id, usuarioId]);
+  return result.rows[0];
+}
+
+async function remove(id, usuarioId) {
+  const query = `
+    DELETE FROM conteudos
+    WHERE id = $1 AND usuario_id = $2
+  `;
+  await db.query(query, [id, usuarioId]);
+}
+
 module.exports = {
   create,
+  update,
+  remove,
   findAllByMateriaIdAndUserId,
   findByIdAndUserId
 };

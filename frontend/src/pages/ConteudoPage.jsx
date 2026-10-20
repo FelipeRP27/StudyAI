@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, BookOpenCheck, FileText, Layers, Lightbulb, Sparkles } from 'lucide-react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  BookOpenCheck,
+  FileText,
+  Layers,
+  Lightbulb,
+  Pencil,
+  Sparkles,
+  Trash2
+} from 'lucide-react';
 import { conteudoService } from '../services/conteudoService';
 import { resumoService } from '../services/resumoService';
 import { pontoChaveService } from '../services/pontoChaveService';
@@ -200,6 +209,13 @@ function ConteudoPage() {
   const [gerarError, setGerarError] = useState('');
   const [etapasStatus, setEtapasStatus] = useState({});
 
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ titulo: '', texto: '' });
+  const [editError, setEditError] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [searchParams, setSearchParams] = useSearchParams();
   const abaDaUrl = searchParams.get('aba');
   const abaAtiva = ABAS.some((aba) => aba.id === abaDaUrl) ? abaDaUrl : 'resumo';
@@ -291,6 +307,52 @@ function ConteudoPage() {
     }
   };
 
+  const handleStartEdit = () => {
+    setEditForm({ titulo: conteudo.titulo, texto: conteudo.texto });
+    setEditError('');
+    setIsEditing(true);
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+    setEditForm((atual) => ({ ...atual, [name]: value }));
+  };
+
+  const handleSaveEdit = async (event) => {
+    event.preventDefault();
+    setEditError('');
+    setIsSaving(true);
+    try {
+      const atualizado = await conteudoService.update(conteudoId, editForm);
+      setConteudo(atualizado);
+      setIsEditing(false);
+    } catch (error) {
+      setEditError(error.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    const totalMaterial =
+      resumos.length + pontosChave.length + questoes.length + flashcards.length;
+    const aviso =
+      totalMaterial > 0
+        ? `Excluir o conteúdo "${conteudo.titulo}"?\n\nIsso vai apagar permanentemente o material gerado por IA (${resumos.length} resumo(s), ${pontosChave.length} ponto(s)-chave, ${questoes.length} questão(ões) e ${flashcards.length} flashcard(s)), além das respostas registradas.`
+        : `Excluir o conteúdo "${conteudo.titulo}"?\n\nEssa ação não pode ser desfeita.`;
+
+    if (!window.confirm(aviso)) return;
+
+    setIsDeleting(true);
+    try {
+      await conteudoService.remove(conteudoId);
+      navigate(`/materias/${conteudo.materia_id}`);
+    } catch (error) {
+      setErrorMessage(error.message);
+      setIsDeleting(false);
+    }
+  };
+
   const contagens = useMemo(
     () => ({
       resumo: resumos.length,
@@ -306,22 +368,95 @@ function ConteudoPage() {
   return (
     <main className="dashboard-page">
       <section className="dashboard-hero">
-        <div>
-          {conteudo ? (
-            <p className="eyebrow">
-              <Link to={`/materias/${conteudo.materia_id}`} className="back-link">
-                <ArrowLeft size={14} /> Voltar para matéria
-              </Link>
+        {isEditing ? (
+          <form className="form materia-edit-form" onSubmit={handleSaveEdit}>
+            <p className="eyebrow">Editando conteúdo</p>
+            <label className="field">
+              <span>Título</span>
+              <input
+                name="titulo"
+                type="text"
+                value={editForm.titulo}
+                onChange={handleEditChange}
+                required
+                autoFocus
+              />
+            </label>
+            <label className="field">
+              <span>Texto</span>
+              <textarea
+                name="texto"
+                rows={10}
+                value={editForm.texto}
+                onChange={handleEditChange}
+                required
+              />
+              <small className="field-help">
+                {editForm.texto.trim().length.toLocaleString('pt-BR')} caracteres · mínimo de 20
+              </small>
+            </label>
+            {editError ? <p className="feedback error">{editError}</p> : null}
+            <div className="form-actions">
+              <button type="submit" className="primary-button" disabled={isSaving}>
+                {isSaving ? 'Salvando...' : 'Salvar alterações'}
+              </button>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setIsEditing(false)}
+                disabled={isSaving}
+              >
+                Cancelar
+              </button>
+            </div>
+            <p className="field-help warn">
+              Editar o texto não apaga o material já gerado. Gere de novo para o material refletir o
+              texto novo.
             </p>
-          ) : (
-            <p className="eyebrow">
-              <Link to="/dashboard" className="back-link">
-                <ArrowLeft size={14} /> Dashboard
-              </Link>
-            </p>
-          )}
-          <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
-        </div>
+          </form>
+        ) : (
+          <>
+            <div>
+              {conteudo ? (
+                <p className="eyebrow">
+                  <Link to={`/materias/${conteudo.materia_id}`} className="back-link">
+                    <ArrowLeft size={14} /> Voltar para matéria
+                  </Link>
+                </p>
+              ) : (
+                <p className="eyebrow">
+                  <Link to="/dashboard" className="back-link">
+                    <ArrowLeft size={14} /> Dashboard
+                  </Link>
+                </p>
+              )}
+              <h1>{conteudo?.titulo || 'Carregando conteúdo...'}</h1>
+            </div>
+
+            {conteudo ? (
+              <div className="hero-actions">
+                <button
+                  type="button"
+                  className="secondary-button small button-with-spinner"
+                  onClick={handleStartEdit}
+                  disabled={isDeleting}
+                >
+                  <Pencil size={14} />
+                  <span>Editar</span>
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button small danger button-with-spinner"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  <Trash2 size={14} />
+                  <span>{isDeleting ? 'Excluindo...' : 'Excluir'}</span>
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
       </section>
 
       {isLoading ? (

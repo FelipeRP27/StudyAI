@@ -32,6 +32,27 @@ async function listByMateria(input) {
   return toConteudoListResponseDto(conteudos);
 }
 
+async function update(input) {
+  const conteudo = await conteudoRepository.findByIdAndUserId(input.id, input.usuarioId);
+
+  if (!conteudo) {
+    throw new AppError('Conteudo not found', 404);
+  }
+
+  const atualizado = await conteudoRepository.update(input);
+  return toConteudoResponseDto(atualizado);
+}
+
+async function remove({ id, usuarioId }) {
+  const conteudo = await conteudoRepository.findByIdAndUserId(id, usuarioId);
+
+  if (!conteudo) {
+    throw new AppError('Conteudo not found', 404);
+  }
+
+  await conteudoRepository.remove(id, usuarioId);
+}
+
 async function findById({ id, usuarioId }) {
   const conteudo = await conteudoRepository.findByIdAndUserId(id, usuarioId);
 
@@ -44,6 +65,8 @@ async function findById({ id, usuarioId }) {
 
 module.exports = {
   create,
+  update,
+  remove,
   listByMateria,
   findById
 };

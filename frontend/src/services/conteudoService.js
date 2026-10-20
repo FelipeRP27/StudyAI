@@ -15,8 +15,21 @@ async function create({ titulo, texto, materia_id }) {
   });
 }
 
+async function update(id, { titulo, texto }) {
+  return api.request(`/conteudos/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ titulo, texto })
+  });
+}
+
+async function remove(id) {
+  return api.request(`/conteudos/${id}`, { method: 'DELETE' });
+}
+
 export const conteudoService = {
   listByMateria,
   getById,
-  create
+  create,
+  update,
+  remove
 };
