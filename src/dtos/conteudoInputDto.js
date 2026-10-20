@@ -4,17 +4,9 @@ const TITULO_MAX_LENGTH = 150;
 const TEXTO_MIN_LENGTH = 20;
 const TEXTO_MAX_LENGTH = 50000;
 
-function buildCreateConteudoInputDto(body, usuarioId) {
-  const { titulo, texto, materia_id: materiaId } = body;
-
-  if (!titulo || !texto || !materiaId) {
-    throw new AppError('titulo, texto and materia_id are required', 400);
-  }
-
-  const parsedMateriaId = Number(materiaId);
-
-  if (!Number.isInteger(parsedMateriaId) || parsedMateriaId <= 0) {
-    throw new AppError('valid materia_id is required', 400);
+function normalizarTituloTexto({ titulo, texto }) {
+  if (!titulo || !texto) {
+    throw new AppError('titulo and texto are required', 400);
   }
 
   const tituloTrimmed = String(titulo).trim();
@@ -30,10 +22,35 @@ function buildCreateConteudoInputDto(body, usuarioId) {
     throw new AppError(`texto must have at most ${TEXTO_MAX_LENGTH} characters`, 400);
   }
 
+  return { titulo: tituloTrimmed, texto: textoTrimmed };
+}
+
+function buildCreateConteudoInputDto(body, usuarioId) {
+  const { titulo, texto, materia_id: materiaId } = body;
+
+  if (!materiaId) {
+    throw new AppError('titulo, texto and materia_id are required', 400);
+  }
+
+  const parsedMateriaId = Number(materiaId);
+
+  if (!Number.isInteger(parsedMateriaId) || parsedMateriaId <= 0) {
+    throw new AppError('valid materia_id is required', 400);
+  }
+
   return {
-    titulo: tituloTrimmed,
-    texto: textoTrimmed,
+    ...normalizarTituloTexto({ titulo, texto }),
     materiaId: parsedMateriaId,
+    usuarioId: Number(usuarioId)
+  };
+}
+
+function buildUpdateConteudoInputDto(body, params, usuarioId) {
+  const { id } = buildConteudoParamsDto(params);
+
+  return {
+    id,
+    ...normalizarTituloTexto({ titulo: body.titulo, texto: body.texto }),
     usuarioId: Number(usuarioId)
   };
 }
@@ -60,6 +77,7 @@ function buildConteudoParamsDto(params) {
 
 module.exports = {
   buildCreateConteudoInputDto,
+  buildUpdateConteudoInputDto,
   buildConteudoMateriaParamsDto,
   buildConteudoParamsDto
 };
