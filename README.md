@@ -24,7 +24,7 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 ### Fluxo principal
 1. **Cadastro/login** com JWT, validação customizada em pt-BR e rotas protegidas.
 2. **Matérias** — criar, listar, editar e excluir (cascade nos conteúdos vinculados).
-3. **Conteúdos** — criar colando texto **ou anexando PDF/TXT** (extração no navegador via `pdfjs-dist` carregado dinamicamente).
+3. **Conteúdos** — criar colando texto **ou anexando PDF/TXT** (extração no navegador via `pdfjs-dist` carregado dinamicamente), além de editar título e texto e excluir (cascade no material gerado, nas respostas e no registro de estudo).
 4. **Geração com IA** (Google Gemini): em um clique gera resumo, pontos-chave, questões com alternativas e flashcards. Indicadores em tempo real das 4 etapas.
 5. **Resolução de questões** com correção automática e feedback (alternativa correta destacada em verde) e justificativa gerada pela IA para cada alternativa.
 6. **Flashcards** com flip 3D, marcação de revisão por usuário e indicador de progresso (dots no deck).
@@ -142,20 +142,36 @@ docker exec studyai_backend node src/scripts/classificarAssuntos.js   # classifi
 ## Testes
 
 ```bash
-npm install        # apenas na primeira vez ou após mudar deps
-npm test
+npm install            # apenas na primeira vez ou após mudar deps
+
+npm test               # unitários: rápidos, sem banco e sem IA
+npm run test:integracao  # consultas SQL contra um Postgres real
+npm run test:tudo        # os dois em sequência
 ```
 
-**126 testes** em 19 suites, cobrindo:
+### Unitários — 133 testes em 20 suites
+
+Mocks de Gemini e dos repositórios: não chamam IA real nem precisam de banco.
 - **Sprint 3** — `iaService`, `resumoService`, `pontoChaveService`, `questaoService`, `flashcardService`, `processamentoService`
 - **Sprint 4** — `respostaService`, `tarefaService`, `tarefaOutputDto`
 - **Sprint 5 / pós** — `desempenhoService` (com drill-down por matéria), retry/cache do `iaService`
 - **Plano de Estudo** — `analiseDesempenhoService` (taxa, prioridade, recência, tendência, sessões com erro, assuntos difíceis), `planoEstudoService`
 - **Caderno de erros** — `cadernoErrosService`, `cadernoErrosInputDto`, `assuntoQuestaoService`
 - **Orientação** — `sessaoEstudoService` (sessão e diagnóstico), `painelService`, `atividadeEstudoService`
+- **Conteúdos** — `conteudoService` (edição, exclusão, ownership e validações compartilhadas)
 - **App HTTP** — `app.test.js` com Supertest (corpo ausente → 400, rota inexistente → 404, filtros e tipos inválidos → 400, sem token → 401)
 
-Tudo com mocks de Gemini e dos repositórios (não chama IA real nem precisa de banco).
+### Integração — 35 testes em 5 suites
+
+Rodam o SQL de verdade, sem mock de banco. Precisam só do Postgres no ar
+(`docker compose up -d db`): a suíte cria o banco `studyai_test`, aplica o
+`schema.sql` e limpa as tabelas entre os testes.
+
+- `respostaRepository` — agregações por matéria/conteúdo, janela das últimas respostas, sessões agrupadas por dia, erros por assunto e recortes por matéria
+- `cadernoErrosRepository` — status pendente/revisado derivado da última resposta, ordenação, filtros e resumo de erros recorrentes
+- `questaoRepository` — ordem da sessão (inéditas → erros pendentes → mais erradas → vistas há mais tempo) e o rodízio entre conteúdos no diagnóstico
+- `conteudoRepository` — edição, isolamento por usuário e cascata completa da exclusão
+- `atividadeEstudoRepository` — janela de 30 minutos que evita registrar o mesmo estudo duas vezes
 
 ---
 
@@ -254,7 +270,7 @@ StudyAI/
 | Evolução 1 | Plano de Estudo personalizado (análise de desempenho por conteúdo, página Meu Plano, histórico no seed) | ✅ Concluída |
 | Evolução 2 | Assunto por questão, caderno de erros, priorização com vários fatores e diagnóstico por matéria | ✅ Concluída |
 | Evolução 3 | Registro de estudo, recomendações com link, sessão de questões, diagnóstico e painel de orientação | ✅ Concluída |
-| Evolução 4 | Testes e estabilização | ⏳ Planejada |
+| Evolução 4 | Testes e estabilização (suíte de integração contra banco real, edição/exclusão de conteúdo, dependências atualizadas) | ✅ Concluída |
 | Evolução 5 | Documentação e apresentação | ⏳ Planejada |
 
 ---
