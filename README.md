@@ -35,8 +35,9 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 11. **Sessão de questões recomendada** (`/plano/sessao`) — monta a lista de questões do conteúdo priorizando as não respondidas e os erros pendentes, e oferece gerar mais questões com a IA quando faltam. Ao terminar, mostra o placar, o que mudou no diagnóstico e a próxima ação.
 12. **Questões de diagnóstico** (`/plano/diagnostico`) — para quem ainda não respondeu o suficiente, sorteia questões inéditas e informa quantas respostas faltam para o plano ser gerado.
 13. **Painel de orientação** na tela inicial (`/dashboard`), que é um painel de decisão e não hospeda cadastro — três blocos: como você está (taxa, evolução de 7 dias e matérias), onde focar (conteúdos prioritários, erros e revisões) e o que fazer agora (as três próximas atividades, com link direto).
-14. **Navegação na ordem do estudo** — a barra superior segue o fluxo de uso: Início · Matérias · Meu plano · Erros · Desempenho · Tarefas. Cada tela volta para o seu nível acima (conteúdo → matéria → matérias), e não para a inicial.
-15. **Registro de estudo** — abrir resumo, pontos-chave, flashcards, questões ou o conteúdo é registrado, e a recência do plano passa a considerar o estudo, não só a última resposta.
+14. **Próximo passo guiado** (`GET /proximo-passo`) — o backend deriva em que ponto da jornada a conta está (criar matéria → adicionar conteúdo → gerar material → responder questões → pronto) e devolve a ação com a rota certa. A tela inicial mostra a trilha das quatro etapas enquanto a conta é nova, e plano e diagnóstico oferecem essa mesma ação em vez de avisos sem saída. Cada criação encadeia com o passo seguinte: criar matéria entra nela, criar conteúdo abre o conteúdo.
+15. **Navegação na ordem do estudo** — a barra superior segue o fluxo de uso: Início · Matérias · Meu plano · Erros · Desempenho · Tarefas. Cada tela volta para o seu nível acima (conteúdo → matéria → matérias), e não para a inicial.
+16. **Registro de estudo** — abrir resumo, pontos-chave, flashcards, questões ou o conteúdo é registrado, e a recência do plano passa a considerar o estudo, não só a última resposta.
 
 ### Robustez e qualidade
 - **Cache de IA por hash sha256** do prompt (`ia_cache`) — sem custo de cota quando o mesmo pedido se repete.
@@ -150,7 +151,7 @@ npm run test:integracao  # consultas SQL contra um Postgres real
 npm run test:tudo        # os dois em sequência
 ```
 
-### Unitários — 133 testes em 20 suites
+### Unitários — 141 testes em 21 suites
 
 Mocks de Gemini e dos repositórios: não chamam IA real nem precisam de banco.
 - **Sprint 3** — `iaService`, `resumoService`, `pontoChaveService`, `questaoService`, `flashcardService`, `processamentoService`
@@ -162,7 +163,7 @@ Mocks de Gemini e dos repositórios: não chamam IA real nem precisam de banco.
 - **Conteúdos** — `conteudoService` (edição, exclusão, ownership e validações compartilhadas)
 - **App HTTP** — `app.test.js` com Supertest (corpo ausente → 400, rota inexistente → 404, filtros e tipos inválidos → 400, sem token → 401)
 
-### Integração — 35 testes em 5 suites
+### Integração — 43 testes em 6 suites
 
 Rodam o SQL de verdade, sem mock de banco. Precisam só do Postgres no ar
 (`docker compose up -d db`): a suíte cria o banco `studyai_test`, aplica o
@@ -173,6 +174,7 @@ Rodam o SQL de verdade, sem mock de banco. Precisam só do Postgres no ar
 - `questaoRepository` — ordem da sessão (inéditas → erros pendentes → mais erradas → vistas há mais tempo) e o rodízio entre conteúdos no diagnóstico
 - `conteudoRepository` — edição, isolamento por usuário e cascata completa da exclusão
 - `atividadeEstudoRepository` — janela de 30 minutos que evita registrar o mesmo estudo duas vezes
+- `jornadaRepository` — os cinco estágios da conta e a garantia de que nenhum deles produz rota com id nulo
 
 ---
 

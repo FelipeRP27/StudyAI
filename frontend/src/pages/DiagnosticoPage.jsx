@@ -7,6 +7,8 @@ import ResultadoSessao from '../shared/ResultadoSessao';
 import { planoEstudoService } from '../services/planoEstudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import PageHeader from '../shared/PageHeader';
+import ProximoPasso from '../shared/ProximoPasso';
+import { proximoPassoService } from '../services/proximoPassoService';
 
 function DiagnosticoPage() {
   useDocumentTitle('Questões de diagnóstico');
@@ -15,13 +17,19 @@ function DiagnosticoPage() {
   const [planoDepois, setPlanoDepois] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [proximoPasso, setProximoPasso] = useState(null);
 
   const carregar = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage('');
     setPlanoDepois(null);
     try {
-      setDiagnostico(await planoEstudoService.diagnostico());
+      const [dados, passo] = await Promise.all([
+        planoEstudoService.diagnostico(),
+        proximoPassoService.get().catch(() => null)
+      ]);
+      setDiagnostico(dados);
+      setProximoPasso(passo);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -69,10 +77,8 @@ function DiagnosticoPage() {
             <Compass size={36} className="empty-state-svg" aria-hidden="true" />
             <strong>Nenhuma questão nova para o diagnóstico</strong>
             <p className="muted">{diagnostico.mensagem}</p>
-            <Link to="/dashboard" className="primary-button small button-with-spinner">
-              <span>Escolher um conteúdo</span>
-            </Link>
           </div>
+          <ProximoPasso passo={proximoPasso} />
         </section>
       ) : (
         <QuestaoQuiz

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronRight, Plus, X } from 'lucide-react';
 import { materiaService } from '../services/materiaService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
@@ -9,6 +9,7 @@ import PageHeader from '../shared/PageHeader';
 
 function MateriasPage() {
   useDocumentTitle('Matérias');
+  const navigate = useNavigate();
 
   const [materias, setMaterias] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,9 +53,13 @@ function MateriasPage() {
     setIsCreating(true);
 
     try {
-      await materiaService.create({ nome: formData.nome, descricao: formData.descricao });
+      const criada = await materiaService.create({
+        nome: formData.nome,
+        descricao: formData.descricao
+      });
       fecharFormulario();
-      await carregar();
+      navigate(`/materias/${criada.id}`);
+      return;
     } catch (error) {
       setCreateError(error.message);
     } finally {

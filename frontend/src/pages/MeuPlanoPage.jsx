@@ -23,6 +23,8 @@ import Skeleton from '../shared/Skeleton';
 import { planoEstudoService } from '../services/planoEstudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import PageHeader from '../shared/PageHeader';
+import ProximoPasso from '../shared/ProximoPasso';
+import { proximoPassoService } from '../services/proximoPassoService';
 
 const PRIORIDADES = {
   alta: { rotulo: 'Prioridade alta', classe: 'alta' },
@@ -251,6 +253,7 @@ function MeuPlanoPage() {
   const [plano, setPlano] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [proximoPasso, setProximoPasso] = useState(null);
 
   useEffect(() => {
     let ativo = true;
@@ -259,8 +262,14 @@ function MeuPlanoPage() {
       setIsLoading(true);
       setErrorMessage('');
       try {
-        const resposta = await planoEstudoService.get();
-        if (ativo) setPlano(resposta);
+        const [resposta, passo] = await Promise.all([
+          planoEstudoService.get(),
+          proximoPassoService.get().catch(() => null)
+        ]);
+        if (ativo) {
+          setPlano(resposta);
+          setProximoPasso(passo);
+        }
       } catch (error) {
         if (ativo) setErrorMessage(error.message);
       } finally {
@@ -323,14 +332,14 @@ function MeuPlanoPage() {
               <Compass size={40} className="empty-state-svg" aria-hidden="true" />
               <strong>Ainda precisamos conhecer melhor seu desempenho</strong>
               <p className="muted">{plano.mensagem}</p>
-              <Link
-                to={plano.acao_inicial_rota || '/plano/diagnostico'}
-                className="primary-button small button-with-spinner"
-              >
-                <span>{plano.acao_inicial || 'Responder questões'}</span>
-                <ArrowRight size={14} />
-              </Link>
+              {proximoPasso ? (
+                <p className="progresso-respostas">
+                  <strong>{proximoPasso.progresso.total_respostas}</strong> de{' '}
+                  <strong>{proximoPasso.progresso.minimo_respostas}</strong> respostas
+                </p>
+              ) : null}
             </div>
+            <ProximoPasso passo={proximoPasso} />
           </section>
         ) : (
           <>
