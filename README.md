@@ -163,7 +163,7 @@ Mocks de Gemini e dos repositórios: não chamam IA real nem precisam de banco.
 - **Conteúdos** — `conteudoService` (edição, exclusão, ownership e validações compartilhadas)
 - **App HTTP** — `app.test.js` com Supertest (corpo ausente → 400, rota inexistente → 404, filtros e tipos inválidos → 400, sem token → 401)
 
-### Integração — 35 testes em 5 suites
+### Integração — 43 testes em 6 suites
 
 Rodam o SQL de verdade, sem mock de banco. Precisam só do Postgres no ar
 (`docker compose up -d db`): a suíte cria o banco `studyai_test`, aplica o
