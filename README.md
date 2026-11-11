@@ -23,7 +23,7 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 
 ### Fluxo principal
 1. **Cadastro/login** com JWT, validação customizada em pt-BR e rotas protegidas.
-2. **Matérias** — criar, listar, editar e excluir (cascade nos conteúdos vinculados).
+2. **Matérias** (`/materias`) — tela dedicada para criar, listar, editar e excluir (cascade nos conteúdos vinculados). O formulário de criação fica recolhido até ser pedido.
 3. **Conteúdos** — criar colando texto **ou anexando PDF/TXT** (extração no navegador via `pdfjs-dist` carregado dinamicamente), além de editar título e texto e excluir (cascade no material gerado, nas respostas e no registro de estudo).
 4. **Geração com IA** (Google Gemini): em um clique gera resumo, pontos-chave, questões com alternativas e flashcards. Indicadores em tempo real das 4 etapas.
 5. **Resolução de questões** com correção automática e feedback (alternativa correta destacada em verde) e justificativa gerada pela IA para cada alternativa.
@@ -34,8 +34,9 @@ Assistente inteligente para estudantes de concursos públicos transformarem cont
 10. **Caderno de erros** (`/erros`) — toda questão errada entra no caderno e fica **pendente** até ser acertada de novo. Tem resumo por matéria, conteúdo e assunto, filtros e modo de refazer com a justificativa de cada alternativa.
 11. **Sessão de questões recomendada** (`/plano/sessao`) — monta a lista de questões do conteúdo priorizando as não respondidas e os erros pendentes, e oferece gerar mais questões com a IA quando faltam. Ao terminar, mostra o placar, o que mudou no diagnóstico e a próxima ação.
 12. **Questões de diagnóstico** (`/plano/diagnostico`) — para quem ainda não respondeu o suficiente, sorteia questões inéditas e informa quantas respostas faltam para o plano ser gerado.
-13. **Painel de orientação** no dashboard — três blocos: como você está (taxa, evolução de 7 dias e matérias), onde focar (conteúdos prioritários, erros e revisões) e o que fazer agora (as três próximas atividades, com link direto).
-14. **Registro de estudo** — abrir resumo, pontos-chave, flashcards, questões ou o conteúdo é registrado, e a recência do plano passa a considerar o estudo, não só a última resposta.
+13. **Painel de orientação** na tela inicial (`/dashboard`), que é um painel de decisão e não hospeda cadastro — três blocos: como você está (taxa, evolução de 7 dias e matérias), onde focar (conteúdos prioritários, erros e revisões) e o que fazer agora (as três próximas atividades, com link direto).
+14. **Navegação na ordem do estudo** — a barra superior segue o fluxo de uso: Início · Matérias · Meu plano · Erros · Desempenho · Tarefas. Cada tela volta para o seu nível acima (conteúdo → matéria → matérias), e não para a inicial.
+15. **Registro de estudo** — abrir resumo, pontos-chave, flashcards, questões ou o conteúdo é registrado, e a recência do plano passa a considerar o estudo, não só a última resposta.
 
 ### Robustez e qualidade
 - **Cache de IA por hash sha256** do prompt (`ia_cache`) — sem custo de cota quando o mesmo pedido se repete.
