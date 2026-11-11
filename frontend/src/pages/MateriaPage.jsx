@@ -243,7 +243,7 @@ function MateriaPage() {
           <>
             <div className="dashboard-hero-content">
               <p className="eyebrow">
-                <Link to="/dashboard" className="back-link">
+                <Link to="/materias" className="back-link">
                   <ArrowLeft size={14} /> Matérias
                 </Link>
               </p>
@@ -296,7 +296,7 @@ function MateriaPage() {
                   <strong>{desempenho.resumo.total_acertos}</strong> acertos
                 </span>
                 <span className="stat-chip">
-                  <strong>{desempenho.resumo.taxa_acerto}%</strong> de acerto
+                  <strong>{Math.round(desempenho.resumo.taxa_acerto)}%</strong> de acerto
                 </span>
               </div>
             </div>

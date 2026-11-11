@@ -425,8 +425,8 @@ function ConteudoPage() {
                 </p>
               ) : (
                 <p className="eyebrow">
-                  <Link to="/dashboard" className="back-link">
-                    <ArrowLeft size={14} /> Dashboard
+                  <Link to="/materias" className="back-link">
+                    <ArrowLeft size={14} /> Matérias
                   </Link>
                 </p>
               )}
