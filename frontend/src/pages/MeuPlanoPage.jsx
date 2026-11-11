@@ -22,6 +22,7 @@ import {
 import Skeleton from '../shared/Skeleton';
 import { planoEstudoService } from '../services/planoEstudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 
 const PRIORIDADES = {
   alta: { rotulo: 'Prioridade alta', classe: 'alta' },
@@ -208,7 +209,7 @@ function PlanoItem({ item, ordem }) {
             className="plano-item-numeros"
             title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
           >
-            {item.taxa_acerto}% de acerto
+            {Math.round(item.taxa_acerto)}% de acerto
           </span>
           <TendenciaBadge item={item} />
         </div>
@@ -278,20 +279,17 @@ function MeuPlanoPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/dashboard" className="back-link">
-              <ArrowLeft size={14} /> Dashboard
-            </Link>
-          </p>
-          <h1>Meu plano de estudo</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/dashboard"
+        voltarRotulo="Início"
+        titulo="Meu plano de estudo"
+        descricao={
+          <>
             O StudyAI analisa suas respostas e indica o que estudar primeiro, com o motivo de cada
             recomendação.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {isLoading ? (
         <>
@@ -339,7 +337,7 @@ function MeuPlanoPage() {
             <section className="metric-grid">
               <MetricCard
                 label="Taxa de acerto geral"
-                value={`${resumo.taxa_acerto}%`}
+                value={`${Math.round(resumo.taxa_acerto)}%`}
                 accent="primary"
                 icon={Percent}
               />

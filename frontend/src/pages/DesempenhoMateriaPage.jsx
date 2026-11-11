@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, BarChart3, CheckCircle2, FileText, Percent, XCircle } from 'lucide-react';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 import Skeleton from '../shared/Skeleton';
 
 function MetricCard({ label, value, accent, icon: Icon }) {
@@ -67,19 +68,16 @@ function DesempenhoMateriaPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/desempenho" className="back-link">
-              <ArrowLeft size={14} /> Desempenho
-            </Link>
-          </p>
-          <h1>{materia?.nome || 'Carregando matéria...'}</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/desempenho"
+        voltarRotulo="Desempenho"
+        titulo="{materia?.nome || 'Carregando matéria...'}"
+        descricao={
+          <>
             Como você está indo nesta matéria nos últimos 30 dias.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {isLoading ? (
         <>
@@ -124,7 +122,7 @@ function DesempenhoMateriaPage() {
             />
             <MetricCard
               label="Taxa de acerto"
-              value={`${resumo.taxa_acerto}%`}
+              value={`${Math.round(resumo.taxa_acerto)}%`}
               accent="primary"
               icon={Percent}
             />
@@ -168,7 +166,7 @@ function DesempenhoMateriaPage() {
                           <span
                             title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
                           >
-                            {item.total_acertos}/{item.total_respostas} ({item.taxa_acerto}%)
+                            {item.total_acertos}/{item.total_respostas} ({Math.round(item.taxa_acerto)}%)
                           </span>
                         </header>
                         <BarraTaxa taxa={item.taxa_acerto} />

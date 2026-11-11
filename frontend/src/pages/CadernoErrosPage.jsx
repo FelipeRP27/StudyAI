@@ -15,6 +15,7 @@ import Skeleton from '../shared/Skeleton';
 import QuestaoQuiz, { AssuntoTag } from '../shared/QuestaoQuiz';
 import { cadernoErrosService } from '../services/cadernoErrosService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 
 const STATUS_ABAS = [
   { valor: '', rotulo: 'Todas', contagem: 'questoes' },
@@ -304,19 +305,16 @@ function CadernoErrosPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/plano" className="back-link">
-              <ArrowLeft size={14} /> Meu plano
-            </Link>
-          </p>
-          <h1>Caderno de erros</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/plano"
+        voltarRotulo="Meu plano"
+        titulo="Caderno de erros"
+        descricao={
+          <>
             Toda questão que você erra entra aqui. Ela fica pendente até você acertá-la de novo.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 

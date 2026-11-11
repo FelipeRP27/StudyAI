@@ -14,6 +14,7 @@ import {
 import Skeleton from '../shared/Skeleton';
 import { desempenhoService } from '../services/desempenhoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 
 function MetricCard({ label, value, accent, icon: Icon }) {
   return (
@@ -76,29 +77,23 @@ function DesempenhoPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/dashboard" className="back-link">
-              <ArrowLeft size={14} /> Dashboard
-            </Link>
-          </p>
-          <h1>Seu desempenho</h1>
-          <p className="dashboard-copy">
-            Estatísticas dos últimos 30 dias com base nas questões que você respondeu.
-          </p>
-          <p className="dashboard-atalhos">
-            <Link to="/plano" className="secondary-button small button-with-spinner">
-              <Compass size={14} />
-              <span>Ver meu plano</span>
-            </Link>
-            <Link to="/erros" className="secondary-button small button-with-spinner">
-              <NotebookPen size={14} />
-              <span>Caderno de erros</span>
-            </Link>
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        voltarPara="/dashboard"
+        voltarRotulo="Início"
+        titulo="Seu desempenho"
+        descricao="Estatísticas dos últimos 30 dias com base nas questões que você respondeu."
+      >
+        <p className="dashboard-atalhos">
+          <Link to="/plano" className="secondary-button small button-with-spinner">
+            <Compass size={14} />
+            <span>Ver meu plano</span>
+          </Link>
+          <Link to="/erros" className="secondary-button small button-with-spinner">
+            <NotebookPen size={14} />
+            <span>Caderno de erros</span>
+          </Link>
+        </p>
+      </PageHeader>
 
       {isLoading ? (
         <>
@@ -147,7 +142,7 @@ function DesempenhoPage() {
             />
             <MetricCard
               label="Taxa de acerto"
-              value={`${resumo.taxa_acerto}%`}
+              value={`${Math.round(resumo.taxa_acerto)}%`}
               accent="primary"
               icon={Percent}
             />
@@ -191,7 +186,7 @@ function DesempenhoPage() {
                               <span
                                 title={`${item.total_acertos} acertos em ${item.total_respostas} respondidas`}
                               >
-                                {item.total_acertos}/{item.total_respostas} ({item.taxa_acerto}%)
+                                {item.total_acertos}/{item.total_respostas} ({Math.round(item.taxa_acerto)}%)
                               </span>
                               <ChevronRight size={16} aria-hidden="true" />
                             </span>

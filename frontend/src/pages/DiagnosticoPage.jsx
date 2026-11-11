@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Compass } from 'lucide-react';
+import { Compass } from 'lucide-react';
 import Skeleton, { SkeletonText } from '../shared/Skeleton';
 import QuestaoQuiz, { AssuntoTag } from '../shared/QuestaoQuiz';
 import ResultadoSessao from '../shared/ResultadoSessao';
 import { planoEstudoService } from '../services/planoEstudoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 
 function DiagnosticoPage() {
   useDocumentTitle('Questões de diagnóstico');
@@ -41,20 +42,17 @@ function DiagnosticoPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/plano" className="back-link">
-              <ArrowLeft size={14} /> Meu plano
-            </Link>
-          </p>
-          <h1>Questões de diagnóstico</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/plano"
+        voltarRotulo="Meu plano"
+        titulo="Questões de diagnóstico"
+        descricao={
+          <>
             {diagnostico?.mensagem ||
               'Responda algumas questões para o StudyAI identificar seus pontos fortes e suas dificuldades.'}
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
