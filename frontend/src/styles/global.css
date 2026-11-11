@@ -299,6 +299,10 @@ input {
 
 .primary-button,
 .secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: none;
   border-radius: var(--radius-md);
   padding: 11px 18px;
@@ -581,8 +585,6 @@ input {
 
 .matter-item a {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
   color: inherit;
   text-decoration: none;
 }
@@ -639,9 +641,6 @@ input {
   animation-delay: 0.1s;
 }
 
-.shortcut-grid {
-  animation: fadeInUp 0.35s ease-out 0.1s both;
-}
 
 .content-card h2 {
   margin: 0 0 14px;
@@ -1677,58 +1676,12 @@ input {
   color: var(--color-text);
 }
 
-.shortcut-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
-}
 
-.shortcut-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 20px 22px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  color: inherit;
-  cursor: pointer;
-  box-shadow: var(--shadow-card);
-  transition:
-    transform var(--transition-base),
-    border-color var(--transition-base),
-    box-shadow var(--transition-base);
-}
 
-.shortcut-card > div {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 
-.shortcut-arrow {
-  font-size: 1.4rem;
-  color: var(--color-primary);
-  transition: transform 0.18s ease;
-}
 
-.shortcut-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--color-primary-border);
-  box-shadow: var(--shadow-card-hover);
-}
 
-.shortcut-card:hover .shortcut-arrow {
-  transform: translateX(4px);
-}
 
-.shortcut-card strong {
-  font-size: 1.1rem;
-  color: var(--color-text);
-  letter-spacing: -0.01em;
-}
 
 .matter-item a {
   display: flex;
@@ -1749,6 +1702,7 @@ input {
   flex-direction: column;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
 .matter-item-arrow {
@@ -1810,13 +1764,6 @@ input {
   text-decoration: underline;
 }
 
-.shortcut-icon {
-  color: var(--color-primary);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
 
 .metric-icon {
   color: var(--color-text-muted);
@@ -3568,4 +3515,235 @@ a.painel-foco:hover {
   flex-wrap: wrap;
   gap: 10px;
   margin: 14px 0 0;
+}
+
+/* ---------- Cabecalho padrao de pagina ---------- */
+.page-header {
+  align-items: flex-start;
+}
+
+.page-header .dashboard-copy {
+  max-width: 68ch;
+  margin-bottom: 0;
+}
+
+.page-header .hero-actions {
+  align-items: center;
+}
+
+/* ---------- Chips de atalho no inicio ---------- */
+.stat-chip.link {
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-chip.link:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.08));
+}
+
+/* ---------- Formulario revelado sob demanda ---------- */
+.form-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.form-card-header .card-heading {
+  margin-bottom: 0;
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.icon-button:hover {
+  color: var(--color-text);
+  border-color: var(--color-primary);
+}
+
+.form-inline-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
+}
+
+.ghost-button {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 12px;
+  border-radius: var(--radius-lg);
+}
+
+.ghost-button:hover {
+  color: var(--color-text);
+  background: var(--color-bg, rgba(15, 23, 42, 0.04));
+}
+
+.card-heading-count {
+  margin-left: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--color-bg, rgba(15, 23, 42, 0.05));
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.empty-state .primary-button {
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .page-header .hero-actions {
+    width: 100%;
+  }
+
+  .page-header .hero-actions > * {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ---------- Proximo passo e trilha de primeiros passos ---------- */
+.proximo-passo {
+  border-color: rgba(37, 99, 235, 0.25);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.03) 100%);
+}
+
+.proximo-passo-corpo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.proximo-passo-texto {
+  min-width: 0;
+  flex: 1;
+}
+
+.proximo-passo-texto .eyebrow {
+  margin-bottom: 6px;
+}
+
+.proximo-passo-texto h2 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.proximo-passo-texto .muted {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.proximo-passo .primary-button {
+  flex-shrink: 0;
+}
+
+.trilha {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin: 0 0 22px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trilha-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.trilha-marcador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.trilha-item.concluida {
+  color: var(--color-text-soft);
+}
+
+.trilha-item.concluida .trilha-marcador {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.trilha-item.atual {
+  color: var(--color-text);
+}
+
+.trilha-item.atual .trilha-marcador {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.progresso-respostas {
+  margin: 4px 0 0;
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .proximo-passo-corpo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .proximo-passo .primary-button {
+    width: 100%;
+  }
+
+  .trilha {
+    gap: 8px 14px;
+  }
+
+  .trilha-item {
+    font-size: 0.85rem;
+  }
 }

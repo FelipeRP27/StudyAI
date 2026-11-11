@@ -123,14 +123,15 @@ function MateriaPage() {
     setIsCreating(true);
 
     try {
-      await conteudoService.create({
+      const criado = await conteudoService.create({
         titulo: formData.titulo,
         texto: formData.texto,
         materia_id: Number(materiaId)
       });
       setFormData({ titulo: '', texto: '' });
       setExtractInfo(null);
-      await loadData();
+      navigate(`/conteudos/${criado.id}`);
+      return;
     } catch (error) {
       setCreateError(error.message);
     } finally {
@@ -190,7 +191,7 @@ function MateriaPage() {
     setIsDeleting(true);
     try {
       await materiaService.remove(materiaId);
-      navigate('/dashboard');
+      navigate('/materias');
     } catch (error) {
       setErrorMessage(error.message);
       setIsDeleting(false);
@@ -243,7 +244,7 @@ function MateriaPage() {
           <>
             <div className="dashboard-hero-content">
               <p className="eyebrow">
-                <Link to="/dashboard" className="back-link">
+                <Link to="/materias" className="back-link">
                   <ArrowLeft size={14} /> Matérias
                 </Link>
               </p>
@@ -296,7 +297,7 @@ function MateriaPage() {
                   <strong>{desempenho.resumo.total_acertos}</strong> acertos
                 </span>
                 <span className="stat-chip">
-                  <strong>{desempenho.resumo.taxa_acerto}%</strong> de acerto
+                  <strong>{Math.round(desempenho.resumo.taxa_acerto)}%</strong> de acerto
                 </span>
               </div>
             </div>

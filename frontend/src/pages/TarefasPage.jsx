@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import {
   AlertCircle,
   AlertTriangle,
@@ -15,6 +14,7 @@ import { SkeletonList } from '../shared/Skeleton';
 import { tarefaService } from '../services/tarefaService';
 import { materiaService } from '../services/materiaService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 
 const URGENCIA_LABEL = {
   vencida: 'Vencida',
@@ -159,19 +159,16 @@ function TarefasPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/dashboard" className="back-link">
-              <ArrowLeft size={14} /> Dashboard
-            </Link>
-          </p>
-          <h1>Tarefas de estudo</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/dashboard"
+        voltarRotulo="Início"
+        titulo="Tarefas de estudo"
+        descricao={
+          <>
             Organize seus prazos e acompanhe o que está urgente.
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       <section className="content-grid">
         <article className="content-card">

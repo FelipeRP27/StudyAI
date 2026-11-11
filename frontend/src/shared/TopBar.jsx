@@ -2,21 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   BarChart3,
+  BookOpen,
   ChevronDown,
   Compass,
+  Home,
   ListTodo,
-  LayoutDashboard,
   LogOut,
   NotebookPen
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const LINKS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/dashboard', label: 'Início', icon: Home },
+  { to: '/materias', label: 'Matérias', icon: BookOpen },
   { to: '/plano', label: 'Meu plano', icon: Compass },
   { to: '/erros', label: 'Erros', icon: NotebookPen },
-  { to: '/tarefas', label: 'Tarefas', icon: ListTodo },
-  { to: '/desempenho', label: 'Desempenho', icon: BarChart3 }
+  { to: '/desempenho', label: 'Desempenho', icon: BarChart3 },
+  { to: '/tarefas', label: 'Tarefas', icon: ListTodo }
 ];
 
 function TopBar() {

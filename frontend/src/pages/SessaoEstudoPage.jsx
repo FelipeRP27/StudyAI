@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, BookOpenCheck, Sparkles } from 'lucide-react';
+import { BookOpenCheck, Sparkles } from 'lucide-react';
 import Skeleton, { SkeletonText } from '../shared/Skeleton';
 import Spinner from '../shared/Spinner';
 import QuestaoQuiz, { AssuntoTag } from '../shared/QuestaoQuiz';
@@ -8,6 +8,7 @@ import ResultadoSessao from '../shared/ResultadoSessao';
 import { planoEstudoService } from '../services/planoEstudoService';
 import { processamentoService } from '../services/processamentoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
+import PageHeader from '../shared/PageHeader';
 import { useRegistroDeEstudo } from '../shared/useRegistroDeEstudo';
 
 const STATUS_ROTULO = {
@@ -82,21 +83,18 @@ function SessaoEstudoPage() {
 
   return (
     <main className="dashboard-page">
-      <section className="dashboard-hero">
-        <div>
-          <p className="eyebrow">
-            <Link to="/plano" className="back-link">
-              <ArrowLeft size={14} /> Meu plano
-            </Link>
-          </p>
-          <h1>Sessão de questões</h1>
-          <p className="dashboard-copy">
+      <PageHeader
+        voltarPara="/plano"
+        voltarRotulo="Meu plano"
+        titulo="Sessão de questões"
+        descricao={
+          <>
             {sessao
               ? `${sessao.conteudo.materia_nome ? `${sessao.conteudo.materia_nome} · ` : ''}${sessao.conteudo.titulo}`
               : 'Carregando...'}
-          </p>
-        </div>
-      </section>
+          </>
+        }
+      />
 
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
