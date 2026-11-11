@@ -3631,3 +3631,119 @@ a.painel-foco:hover {
     justify-content: center;
   }
 }
+
+/* ---------- Proximo passo e trilha de primeiros passos ---------- */
+.proximo-passo {
+  border-color: rgba(37, 99, 235, 0.25);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(124, 58, 237, 0.03) 100%);
+}
+
+.proximo-passo-corpo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.proximo-passo-texto {
+  min-width: 0;
+  flex: 1;
+}
+
+.proximo-passo-texto .eyebrow {
+  margin-bottom: 6px;
+}
+
+.proximo-passo-texto h2 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
+.proximo-passo-texto .muted {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.proximo-passo .primary-button {
+  flex-shrink: 0;
+}
+
+.trilha {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin: 0 0 22px;
+  padding: 0 0 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.trilha-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.trilha-marcador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.trilha-item.concluida {
+  color: var(--color-text-soft);
+}
+
+.trilha-item.concluida .trilha-marcador {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.trilha-item.atual {
+  color: var(--color-text);
+}
+
+.trilha-item.atual .trilha-marcador {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.progresso-respostas {
+  margin: 4px 0 0;
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .proximo-passo-corpo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .proximo-passo .primary-button {
+    width: 100%;
+  }
+
+  .trilha {
+    gap: 8px 14px;
+  }
+
+  .trilha-item {
+    font-size: 0.85rem;
+  }
+}

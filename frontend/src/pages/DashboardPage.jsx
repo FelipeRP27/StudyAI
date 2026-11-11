@@ -6,8 +6,10 @@ import { materiaService } from '../services/materiaService';
 import { tarefaService } from '../services/tarefaService';
 import { desempenhoService } from '../services/desempenhoService';
 import { painelService } from '../services/painelService';
+import { proximoPassoService } from '../services/proximoPassoService';
 import { useDocumentTitle } from '../shared/useDocumentTitle';
 import PainelOrientacao from '../shared/PainelOrientacao';
+import ProximoPasso from '../shared/ProximoPasso';
 
 function DashboardPage() {
   useDocumentTitle('Início');
@@ -17,6 +19,7 @@ function DashboardPage() {
   const [tarefas, setTarefas] = useState([]);
   const [desempenho, setDesempenho] = useState(null);
   const [painel, setPainel] = useState(null);
+  const [proximoPasso, setProximoPasso] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -24,16 +27,18 @@ function DashboardPage() {
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const [materiasData, tarefasData, desempenhoData, painelData] = await Promise.all([
+      const [materiasData, tarefasData, desempenhoData, painelData, passoData] = await Promise.all([
         materiaService.listMaterias(),
         tarefaService.listAll().catch(() => []),
         desempenhoService.get({ dias: 30 }).catch(() => null),
-        painelService.get().catch(() => null)
+        painelService.get().catch(() => null),
+        proximoPassoService.get().catch(() => null)
       ]);
       setMaterias(materiasData);
       setTarefas(tarefasData);
       setDesempenho(desempenhoData);
       setPainel(painelData);
+      setProximoPasso(passoData);
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
@@ -56,7 +61,7 @@ function DashboardPage() {
   const taxaBruta = desempenho?.resumo?.taxa_acerto ?? null;
   const taxaAcerto = taxaBruta === null ? null : Math.round(taxaBruta);
   const totalRespostas = desempenho?.resumo?.total_respostas ?? 0;
-  const semMaterias = !isLoading && materias.length === 0;
+  const emOnboarding = !isLoading && proximoPasso !== null && !proximoPasso.concluida;
 
   return (
     <main className="dashboard-page">
@@ -65,8 +70,8 @@ function DashboardPage() {
           <p className="eyebrow">StudyAI</p>
           <h1>Olá, {usuario?.nome?.split(' ')[0] || 'estudante'}</h1>
           <p className="dashboard-copy">
-            {semMaterias
-              ? 'Crie sua primeira matéria para o StudyAI gerar material de estudo e acompanhar seu desempenho.'
+            {emOnboarding
+              ? 'Siga os passos abaixo para o StudyAI começar a recomendar o que estudar.'
               : 'Aqui está o resumo do seu estudo e o que vale fazer agora.'}
           </p>
           <div className="stat-chips">
@@ -101,24 +106,12 @@ function DashboardPage() {
 
       {errorMessage ? <p className="feedback error">{errorMessage}</p> : null}
 
-      {semMaterias ? (
-        <section className="content-card">
-          <div className="empty-state">
-            <BookOpen size={36} className="empty-state-svg" aria-hidden="true" />
-            <strong>Comece criando sua primeira matéria</strong>
-            <p className="muted">
-              Depois é só colar um texto ou anexar um PDF: a IA gera resumo, pontos-chave, questões e
-              flashcards para você estudar.
-            </p>
-            <Link to="/materias" className="primary-button">
-              <Plus size={16} />
-              <span>Criar matéria</span>
-            </Link>
-          </div>
-        </section>
+      {emOnboarding ? (
+        <ProximoPasso passo={proximoPasso} comTrilha />
       ) : (
         <PainelOrientacao painel={painel} isLoading={isLoading} />
       )}
+
     </main>
   );
 }
