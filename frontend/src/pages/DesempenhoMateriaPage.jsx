@@ -71,7 +71,7 @@ function DesempenhoMateriaPage() {
       <PageHeader
         voltarPara="/desempenho"
         voltarRotulo="Desempenho"
-        titulo="{materia?.nome || 'Carregando matéria...'}"
+        titulo={materia?.nome || 'Carregando matéria...'}
         descricao={
           <>
             Como você está indo nesta matéria nos últimos 30 dias.
